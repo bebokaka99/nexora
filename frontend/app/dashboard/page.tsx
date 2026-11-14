@@ -51,7 +51,8 @@ import {
   Receipt,
   Sparkles,
   LogOut,
-  Loader2
+  Loader2,
+  Building2
 } from "lucide-react";
 import {
   MOCK_PRODUCTS,
@@ -67,6 +68,11 @@ import {
   ConversationItem,
   StoreItem
 } from "@/lib/mock-data";
+import {
+  storeService,
+  Store as StoreEntity,
+  Warehouse as WarehouseEntity,
+} from "@/lib/services/store-service";
 
 // =============================================================================
 // MAIN COMPONENT: INTERACTIVE DASHBOARD DEMO
@@ -105,9 +111,65 @@ export default function DashboardDemoPage() {
   const [isSyncingChannels, setIsSyncingChannels] = useState(false);
 
   // ---------------------------------------------------------------------------
+  // STORES & WAREHOUSES STATE (TASK-004)
+  // ---------------------------------------------------------------------------
+  const [stores, setStores] = useState<StoreEntity[]>([]);
+  const [warehouses, setWarehouses] = useState<WarehouseEntity[]>([]);
+  const [isStoresLoading, setIsStoresLoading] = useState(false);
+  const [showAddStoreModal, setShowAddStoreModal] = useState(false);
+  const [isSubmittingStore, setIsSubmittingStore] = useState(false);
+  const [addStoreError, setAddStoreError] = useState<string | null>(null);
+  const [newStoreForm, setNewStoreForm] = useState({
+    name: "",
+    code: "",
+    address: "",
+    phoneNumber: "",
+    defaultWarehouseId: "",
+  });
+
+  const fetchStoresAndWarehouses = async () => {
+    setIsStoresLoading(true);
+    try {
+      const [stData, whData] = await Promise.all([
+        storeService.getStores(),
+        storeService.getWarehouses(),
+      ]);
+
+      const enrichedStores = stData.map((st, idx) => ({
+        ...st,
+        todayRevenue: st.todayRevenue ?? (idx === 0 ? 15400000 : idx === 1 ? 9800000 : 4200000),
+        ordersCount: st.ordersCount ?? (idx === 0 ? 12 : idx === 1 ? 8 : 4),
+        cashiers: st.cashiers ?? ["Nhân viên trực ca"],
+      }));
+
+      setStores(enrichedStores);
+      setWarehouses(whData);
+      if (whData.length > 0) {
+        setNewStoreForm((prev) => ({
+          ...prev,
+          defaultWarehouseId: prev.defaultWarehouseId || whData[0].id,
+        }));
+      }
+      if (enrichedStores.length > 0 && !enrichedStores.some((s) => s.id === posStore)) {
+        setPosStore(enrichedStores[0].id);
+      }
+    } catch (err: any) {
+      console.error("Không thể tải danh sách cửa hàng & kho:", err);
+    } finally {
+      setIsStoresLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStoresAndWarehouses();
+    }
+  }, [isAuthenticated]);
+
+  // ---------------------------------------------------------------------------
   // POS TERMINAL STATE
   // ---------------------------------------------------------------------------
-  const [posStore, setPosStore] = useState<"store1" | "store2">("store1");
+  const [posStore, setPosStore] = useState<string>("store-001-q1");
   const [posCategory, setPosCategory] = useState<string>("all");
   const [posSearch, setPosSearch] = useState("");
   const [posCart, setPosCart] = useState<{ product: ProductItem; qty: number }[]>([]);
@@ -117,6 +179,16 @@ export default function DashboardDemoPage() {
   const [posCashTendered, setPosCashTendered] = useState<number>(0);
   const [completedReceipt, setCompletedReceipt] = useState<OrderItem | null>(null);
   const [barcodeFlash, setBarcodeFlash] = useState(false);
+
+  // Helper helper to determine active POS store
+  const getActivePosStore = () => {
+    return stores.find((s) => s.id === posStore) || stores[0];
+  };
+
+  const getProductStockForCurrentPos = (product: ProductItem) => {
+    const isFirst = stores.length > 0 ? (posStore === stores[0]?.id || posStore === "store1") : (posStore === "store1");
+    return isFirst ? product.stockStore1 : product.stockStore2;
+  };
 
   // ---------------------------------------------------------------------------
   // INVENTORY TRANSFER MODAL STATE
@@ -145,7 +217,7 @@ export default function DashboardDemoPage() {
   // POS ACTIONS
   // ---------------------------------------------------------------------------
   const addToCart = (product: ProductItem) => {
-    const currentStock = posStore === "store1" ? product.stockStore1 : product.stockStore2;
+    const currentStock = getProductStockForCurrentPos(product);
     if (currentStock <= 0) {
       triggerToast(`Sản phẩm ${product.name} đã hết hàng tại chi nhánh đang chọn!`);
       return;
@@ -171,7 +243,7 @@ export default function DashboardDemoPage() {
       prev
         .map((item) => {
           if (item.product.id === productId) {
-            const currentStock = posStore === "store1" ? item.product.stockStore1 : item.product.stockStore2;
+            const currentStock = getProductStockForCurrentPos(item.product);
             const newQty = item.qty + delta;
             if (newQty > currentStock) {
               triggerToast(`Số lượng không được vượt quá tồn quầy (${currentStock} cái).`);
@@ -201,9 +273,7 @@ export default function DashboardDemoPage() {
     setTimeout(() => setBarcodeFlash(false), 800);
 
     // Pick a random product with stock
-    const available = products.filter((p) =>
-      posStore === "store1" ? p.stockStore1 > 0 : p.stockStore2 > 0
-    );
+    const available = products.filter((p) => getProductStockForCurrentPos(p) > 0);
     if (available.length === 0) return;
     const randomProduct = available[Math.floor(Math.random() * available.length)];
     addToCart(randomProduct);
@@ -226,8 +296,10 @@ export default function DashboardDemoPage() {
       return;
     }
 
+    const activeStoreObj = getActivePosStore();
+    const isFirst = stores.length > 0 ? (posStore === stores[0]?.id || posStore === "store1") : (posStore === "store1");
     const orderSeq = Math.floor(1000 + Math.random() * 9000);
-    const storeCode = posStore === "store1" ? "CN1" : "CN2";
+    const storeCode = activeStoreObj ? activeStoreObj.code.replace('STORE-', '') : (isFirst ? "CN1" : "CN2");
     const newOrderId = `POS-${storeCode}-${orderSeq}`;
 
     // 1. Deduct stock from products
@@ -235,7 +307,7 @@ export default function DashboardDemoPage() {
       prev.map((prod) => {
         const inCart = posCart.find((ci) => ci.product.id === prod.id);
         if (!inCart) return prod;
-        if (posStore === "store1") {
+        if (isFirst) {
           return { ...prod, stockStore1: Math.max(0, prod.stockStore1 - inCart.qty) };
         } else {
           return { ...prod, stockStore2: Math.max(0, prod.stockStore2 - inCart.qty) };
@@ -244,12 +316,15 @@ export default function DashboardDemoPage() {
     );
 
     // 2. Create Order Record
+    const storeLabel = activeStoreObj ? `POS — ${activeStoreObj.name}` : (isFirst ? "POS — Chi Nhánh 1 (Q.1)" : "POS — Chi Nhánh 2 (Bình Thạnh)");
+    const whName = activeStoreObj?.defaultWarehouse?.name || (isFirst ? "Kho Q.1" : "Kho Bình Thạnh");
+
     const newOrder: OrderItem = {
       id: newOrderId,
       customer: posCustomerPhone ? `Khách tại quầy (${posCustomerPhone})` : "Khách lẻ tại quầy",
       phone: posCustomerPhone || "0988 777 666",
-      channel: posStore === "store1" ? "POS_STORE_1" : "POS_STORE_2",
-      channelLabel: posStore === "store1" ? "POS — Chi Nhánh 1 (Q.1)" : "POS — Chi Nhánh 2 (Bình Thạnh)",
+      channel: isFirst ? "POS_STORE_1" : "POS_STORE_2",
+      channelLabel: storeLabel,
       channelBadgeColor: "bg-purple-100 text-purple-800 border-purple-300",
       items: posCart.map((item) => ({
         name: item.product.name,
@@ -272,7 +347,7 @@ export default function DashboardDemoPage() {
       createdAt: "Vừa xong",
       timeline: [
         { time: "Vừa xong", event: `Thu ngân hoàn tất thanh toán hóa đơn ${newOrderId}` },
-        { time: "Vừa xong", event: `Trừ tồn kho trực tiếp tại ${posStore === "store1" ? "Kho Q.1" : "Kho Bình Thạnh"}` },
+        { time: "Vừa xong", event: `Trừ tồn kho trực tiếp tại ${whName}` },
       ],
     };
 
@@ -286,7 +361,7 @@ export default function DashboardDemoPage() {
         type: "pos",
         title: `Thanh toán thành công ${newOrderId}`,
         description: `Đã thu ${cartTotalAmount.toLocaleString("vi-VN")} ₫ bằng ${newOrder.paymentMethod}. Trừ ${posCart.reduce((s, i) => s + i.qty, 0)} sản phẩm tồn kho.`,
-        tag: posStore === "store1" ? "POS CN1" : "POS CN2",
+        tag: activeStoreObj ? activeStoreObj.code : (isFirst ? "POS CN1" : "POS CN2"),
         tagColor: "bg-purple-100 text-purple-800",
       },
       ...prev,
@@ -298,6 +373,44 @@ export default function DashboardDemoPage() {
     // 5. Clear Cart
     clearCart();
     triggerToast(`Đã thanh toán thành công hóa đơn ${newOrderId}!`);
+  };
+
+  // ---------------------------------------------------------------------------
+  // CREATE STORE ACTION (TASK-004)
+  // ---------------------------------------------------------------------------
+  const handleCreateStore = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddStoreError(null);
+    if (!newStoreForm.name.trim() || !newStoreForm.code.trim() || !newStoreForm.address.trim()) {
+      setAddStoreError("Vui lòng điền đầy đủ Tên, Mã cửa hàng và Địa chỉ");
+      return;
+    }
+
+    setIsSubmittingStore(true);
+    try {
+      await storeService.createStore({
+        name: newStoreForm.name.trim(),
+        code: newStoreForm.code.trim().toUpperCase(),
+        address: newStoreForm.address.trim(),
+        phoneNumber: newStoreForm.phoneNumber.trim() || undefined,
+        defaultWarehouseId: newStoreForm.defaultWarehouseId || undefined,
+      });
+
+      triggerToast(`Đã thêm chi nhánh mới: ${newStoreForm.name}`);
+      setShowAddStoreModal(false);
+      setNewStoreForm({
+        name: "",
+        code: "",
+        address: "",
+        phoneNumber: "",
+        defaultWarehouseId: warehouses[0]?.id || "",
+      });
+      await fetchStoresAndWarehouses();
+    } catch (err: any) {
+      setAddStoreError(err.message || "Không thể tạo cửa hàng. Vui lòng kiểm tra lại!");
+    } finally {
+      setIsSubmittingStore(false);
+    }
   };
 
   // ---------------------------------------------------------------------------
@@ -597,14 +710,19 @@ export default function DashboardDemoPage() {
           {/* Màn hình bổ trợ: Cửa hàng */}
           <button
             onClick={() => setActiveTab("stores")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "stores"
                 ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
-            <Store className="w-4 h-4 shrink-0" />
-            <span>Hệ Thống 2 Cửa Hàng</span>
+            <div className="flex items-center gap-3">
+              <Store className="w-4 h-4 shrink-0" />
+              <span>Hệ Thống Cửa Hàng</span>
+            </div>
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+              {stores.length || 2}
+            </span>
           </button>
         </nav>
 
@@ -656,7 +774,7 @@ export default function DashboardDemoPage() {
               {activeTab === "inventory" && "Ma Trận Tồn Kho Đa Điểm & Điều Chuyển Kho"}
               {activeTab === "chat" && "Unified Inbox — Hộp Thư Hội Thoại & Chốt Đơn"}
               {activeTab === "channels" && "Trung Tâm Kết Nối Kênh Sàn & Đồng Bộ Dữ Liệu"}
-              {activeTab === "stores" && "Hệ Thống 2 Cửa Hàng Vật Lý & Điểm Bán"}
+              {activeTab === "stores" && `Hệ Thống ${stores.length || 2} Cửa Hàng Vật Lý & Điểm Bán`}
             </h1>
           </div>
 
@@ -939,26 +1057,44 @@ export default function DashboardDemoPage() {
                     Điểm Bán Hiện Tại:
                   </span>
                   <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs">
-                    <button
-                      onClick={() => setPosStore("store1")}
-                      className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                        posStore === "store1"
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      Chi Nhánh 1 (Quận 1)
-                    </button>
-                    <button
-                      onClick={() => setPosStore("store2")}
-                      className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                        posStore === "store2"
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      Chi Nhánh 2 (Bình Thạnh)
-                    </button>
+                    {stores.length > 0 ? (
+                      stores.map((st) => (
+                        <button
+                          key={st.id}
+                          onClick={() => setPosStore(st.id)}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                            posStore === st.id
+                              ? "bg-purple-600 text-white shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          {st.name.replace("NEXORA Store — ", "").replace("Cửa Hàng ", "CH ")}
+                        </button>
+                      ))
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setPosStore("store1")}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                            posStore === "store1"
+                              ? "bg-purple-600 text-white shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          Chi Nhánh 1 (Quận 1)
+                        </button>
+                        <button
+                          onClick={() => setPosStore("store2")}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                            posStore === "store2"
+                              ? "bg-purple-600 text-white shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          Chi Nhánh 2 (Bình Thạnh)
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -1027,7 +1163,7 @@ export default function DashboardDemoPage() {
                   {/* Product Cards Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
                     {filteredPosProducts.map((p) => {
-                      const stock = posStore === "store1" ? p.stockStore1 : p.stockStore2;
+                      const stock = getProductStockForCurrentPos(p);
                       const isOutOfStock = stock <= 0;
 
                       return (
@@ -1806,54 +1942,241 @@ export default function DashboardDemoPage() {
           )}
 
           {/* ===================================================================
-              TAB BỔ TRỢ: CỬA HÀNG VẬT LÝ (STORES)
+              TAB BỔ TRỢ: CỬA HÀNG VẬT LÝ & KHO HÀNG (STORES & WAREHOUSES - TASK-004)
           =================================================================== */}
           {activeTab === "stores" && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Chuỗi 2 Cửa Hàng Vật Lý Của Khách Hàng</h2>
-                <p className="text-xs text-slate-500">Mỗi cửa hàng liên kết 1 kho hàng tại chỗ và theo dõi ca thu ngân</p>
+              {/* Header with Title and Action Buttons */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-emerald-600" />
+                    <span>Hệ Thống {stores.length} Cửa Hàng & Điểm Bán Vật Lý</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Quản lý mạng lưới chi nhánh bán lẻ, gắn kết kho hàng mặc định và đồng bộ trực tiếp với quầy POS
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={fetchStoresAndWarehouses}
+                    disabled={isStoresLoading}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isStoresLoading ? "animate-spin text-emerald-600" : ""}`} />
+                    <span>{isStoresLoading ? "Đang tải..." : "Làm Mới"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAddStoreError(null);
+                      setShowAddStoreModal(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Thêm Chi Nhánh Mới</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {MOCK_STORES.map((st) => (
-                  <div key={st.id} className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                      <h3 className="font-bold text-slate-900 text-sm">{st.name}</h3>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                        Đang Mở Cửa
-                      </span>
-                    </div>
+              {/* KPI Strip */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 block">Tổng Điểm Bán</span>
+                  <div className="text-2xl font-black text-slate-900 mt-1">{stores.length}</div>
+                  <div className="text-[10px] text-emerald-600 font-semibold mt-1">
+                    {stores.filter((s) => s.isActive).length} Đang hoạt động
+                  </div>
+                </div>
 
-                    <div className="mt-4 space-y-2 text-xs text-slate-600">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                        <span>{st.address}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                        <span>Hotline: {st.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Store className="w-4 h-4 text-purple-600 shrink-0" />
-                        <span>Kho Mặc Định: <strong>{st.defaultWarehouse}</strong></span>
-                      </div>
-                    </div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 block">Tổng Kho Lưu Trữ</span>
+                  <div className="text-2xl font-black text-slate-900 mt-1">{warehouses.length}</div>
+                  <div className="text-[10px] text-purple-600 font-semibold mt-1">
+                    {warehouses.filter((w) => w.type === "CENTRAL").length} Kho tổng •{" "}
+                    {warehouses.filter((w) => w.type === "STORE_ATTACHED").length} Kho quầy
+                  </div>
+                </div>
 
-                    <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 block">Doanh Số Quầy Toàn Hệ Thống</span>
+                  <div className="text-2xl font-black text-emerald-700 mt-1">
+                    {stores
+                      .reduce((sum, s) => sum + (s.todayRevenue || 0), 0)
+                      .toLocaleString("vi-VN")}{" "}
+                    ₫
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-1">Cập nhật theo thời gian thực</div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 block">Tỷ Lệ Khóa Kho Mặc Định</span>
+                  <div className="text-2xl font-black text-purple-700 mt-1">
+                    {stores.length > 0
+                      ? Math.round(
+                          (stores.filter((s) => s.defaultWarehouseId).length / stores.length) * 100
+                        )
+                      : 100}
+                    %
+                  </div>
+                  <div className="text-[10px] text-emerald-600 font-semibold mt-1">Tránh bán vượt tồn kho</div>
+                </div>
+              </div>
+
+              {/* Stores Cards Grid */}
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Danh Sách Chi Nhánh Cửa Hàng
+                  </h3>
+                  <span className="text-[11px] text-slate-400">
+                    Nhấn &quot;Bán Tại Quầy&quot; để mở giao diện POS của chi nhánh
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {stores.map((st) => (
+                    <div
+                      key={st.id}
+                      className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between"
+                    >
                       <div>
-                        <div className="text-[10px] text-slate-400">Doanh Số Tại Quầy Hôm Nay</div>
-                        <div className="text-base font-bold text-slate-900">
-                          {st.todayRevenue.toLocaleString("vi-VN")} ₫
+                        {/* Card Header */}
+                        <div className="flex items-start justify-between gap-2 pb-3 border-b border-slate-100">
+                          <div>
+                            <span className="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              {st.code}
+                            </span>
+                            <h3 className="font-bold text-slate-900 text-sm mt-1.5">{st.name}</h3>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              st.isActive
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {st.isActive ? "Đang Mở Cửa" : "Tạm Dừng"}
+                          </span>
+                        </div>
+
+                        {/* Store Info */}
+                        <div className="mt-4 space-y-2.5 text-xs text-slate-600">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{st.address}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span>Hotline: {st.phoneNumber || "028 3822 1199"}</span>
+                          </div>
+                          <div className="flex items-start gap-2 pt-1 border-t border-slate-100">
+                            <Store className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="text-slate-400 text-[11px]">Kho hàng xuất mặc định:</span>
+                              <div className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
+                                <span>{st.defaultWarehouse?.name || "Kho mặc định (Tại chỗ)"}</span>
+                                {st.defaultWarehouse?.code && (
+                                  <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-50 text-purple-700">
+                                    {st.defaultWarehouse.code}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Financial Snapshot */}
+                        <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-[10px] text-slate-400">Doanh Số Hôm Nay</div>
+                            <div className="text-sm font-bold text-slate-900">
+                              {(st.todayRevenue || 0).toLocaleString("vi-VN")} ₫
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-slate-400">Số Lượng Hóa Đơn</div>
+                            <div className="text-sm font-bold text-slate-900">
+                              {st.ordersCount || 0} HĐ
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-[10px] text-slate-400">Số Lượng Hóa Đơn</div>
-                        <div className="text-base font-bold text-slate-900">{st.ordersCount} Hóa đơn</div>
+
+                      {/* Card Action Button */}
+                      <div className="mt-4 pt-3 border-t border-slate-100">
+                        <button
+                          onClick={() => {
+                            setPosStore(st.id);
+                            setActiveTab("pos");
+                          }}
+                          className="w-full py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Barcode className="w-3.5 h-3.5" />
+                          <span>Mở POS Thu Ngân Chi Nhánh Này</span>
+                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Warehouses Section */}
+              <div className="pt-2">
+                <div className="mb-3">
+                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <Boxes className="w-4 h-4 text-emerald-600" />
+                    <span>Danh Mục {warehouses.length} Kho Hàng Vận Hành Toàn Hệ Thống</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Hệ thống kho đa điểm gồm kho tổng lưu trữ hàng lớn phục vụ sàn Shopee / TikTok Shop và kho vệ tinh tại từng cửa hàng
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {warehouses.map((wh) => (
+                    <div
+                      key={wh.id}
+                      className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                          <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                            {wh.code}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              wh.type === "CENTRAL"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
+                            {wh.type === "CENTRAL" ? "Kho Tổng Trung Tâm" : "Kho Tại Cửa Hàng"}
+                          </span>
+                        </div>
+
+                        <h4 className="font-bold text-slate-900 text-xs mt-2.5 line-clamp-1">
+                          {wh.name}
+                        </h4>
+
+                        <div className="flex items-start gap-1.5 mt-2 text-[11px] text-slate-500">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                          <span className="line-clamp-2">{wh.address}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Trạng thái:</span>
+                        <span className="font-bold text-emerald-600 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Sẵn Sàng Xuất Hàng
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -2133,6 +2456,144 @@ export default function DashboardDemoPage() {
                 Đóng
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =======================================================================
+          MODAL 4: ADD STORE BRANCH MODAL (TASK-004)
+      ======================================================================= */}
+      {showAddStoreModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">Thêm Chi Nhánh Cửa Hàng Mới</h3>
+                  <p className="text-xs text-slate-500">Khai báo điểm bán vật lý và gắn kho xuất hàng mặc định</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddStoreModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateStore} className="py-4 space-y-4 text-xs">
+              {addStoreError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                  <span>{addStoreError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Tên Chi Nhánh / Cửa Hàng <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: Cửa Hàng 3 — Chi nhánh Thủ Đức"
+                  value={newStoreForm.name}
+                  onChange={(e) => setNewStoreForm({ ...newStoreForm, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Mã Chi Nhánh <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="STORE-HCM-03"
+                    value={newStoreForm.code}
+                    onChange={(e) => setNewStoreForm({ ...newStoreForm, code: e.target.value.toUpperCase() })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Số Điện Thoại Hotline</label>
+                  <input
+                    type="text"
+                    placeholder="028 3722 5555"
+                    value={newStoreForm.phoneNumber}
+                    onChange={(e) => setNewStoreForm({ ...newStoreForm, phoneNumber: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Địa Chỉ Cửa Hàng <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: 215 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP. HCM"
+                  value={newStoreForm.address}
+                  onChange={(e) => setNewStoreForm({ ...newStoreForm, address: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Kho Hàng Xuất Mặc Định (POS)
+                </label>
+                <select
+                  value={newStoreForm.defaultWarehouseId}
+                  onChange={(e) => setNewStoreForm({ ...newStoreForm, defaultWarehouseId: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                >
+                  <option value="">-- Không liên kết kho --</option>
+                  {warehouses.map((wh) => (
+                    <option key={wh.id} value={wh.id}>
+                      [{wh.code}] {wh.name} ({wh.type === "CENTRAL" ? "Kho tổng" : "Kho tại chỗ"})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Khi nhân viên thanh toán tại quầy, hệ thống tự động trừ tồn kho từ kho hàng này.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowAddStoreModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-all"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingStore}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSubmittingStore ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Đang Tạo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tạo Chi Nhánh Mới</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -19,15 +19,17 @@ Tài liệu này định nghĩa chi tiết lộ trình phát triển nền tản
   - Tầng Frontend: Màn hình Đăng nhập (`/login`), Đăng ký (`/register`), cơ chế lưu trữ Token an toàn và bảo vệ các trang Dashboard, POS (`TASK-003`).
 - **Nhiệm vụ trọng tâm**:
   - `TASK-002: Implement Auth & Multi-Tenancy Backend Core` (Đã hoàn thành).
-  - `TASK-003: Integrate Frontend Authentication & Route Protection` (Kế tiếp).
+  - `TASK-003: Integrate Frontend Authentication & Route Protection` (Đã hoàn thành).
 
 ## Giai đoạn 03. Quản lý cửa hàng và Kho hàng (Stores & Inventory Core)
 
 - **Mục tiêu**: Xây dựng phân hệ quản trị 2 cửa hàng vật lý ban đầu, liên kết kho gắn với cửa hàng và xử lý biến động tồn kho.
 - **Hiện vật bàn giao**:
-  - Giao diện và API quản lý thông tin cửa hàng, kho hàng.
+  - Giao diện và API quản lý thông tin cửa hàng, kho hàng (`TASK-004`).
   - Cơ chế ghi nhận phiếu nhập kho, phiếu xuất kho và phiếu chuyển kho nội bộ.
   - Xử lý khóa phân tán ngăn chặn bán vượt tồn kho.
+- **Nhiệm vụ trọng tâm**:
+  - `TASK-004: Implement Stores & Warehouses Core` (Đã hoàn thành).
 
 ## Giai đoạn 04. Quản lý sản phẩm và Danh mục hàng gia dụng (Product Catalog)
 
