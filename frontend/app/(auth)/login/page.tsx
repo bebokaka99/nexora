@@ -19,7 +19,7 @@ import { useAuth } from '@/lib/auth-context';
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/dashboard';
+  const redirectUrl = searchParams.get('redirect') || '/quan-tri';
 
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -30,7 +30,7 @@ function LoginFormContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Nếu người dùng đã đăng nhập, tự động chuyển về dashboard
+  // Nếu người dùng đã đăng nhập, tự động chuyển về trang quản trị
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       router.replace(redirectUrl);
@@ -72,32 +72,32 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="w-full max-w-md bg-slate-800/90 backdrop-blur-xl border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl">
+    <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl text-slate-900 dark:text-white transition-colors duration-200">
       {/* Card Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           Đăng nhập hệ thống
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Nhập thông tin tài khoản doanh nghiệp của bạn để tiếp tục
         </p>
       </div>
 
       {/* Quick Demo Fill Helper Banner */}
-      <div className="mb-5 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 flex items-start justify-between gap-3">
+      <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 flex items-start justify-between gap-3">
         <div className="flex items-start gap-2.5">
-          <div className="p-1 rounded-md bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
+          <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
             <KeyRound className="w-3.5 h-3.5" />
           </div>
-          <div className="text-[11px] leading-relaxed text-slate-300">
-            <div className="font-semibold text-emerald-300">Tài khoản quản trị mẫu:</div>
-            <div className="text-slate-400">admin@nexora.vn • Nexora@2026</div>
+          <div className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
+            <div className="font-bold text-emerald-700 dark:text-emerald-300">Tài khoản quản trị mẫu:</div>
+            <div className="text-slate-600 dark:text-slate-400">admin@nexora.vn • Nexora@2026</div>
           </div>
         </div>
         <button
           type="button"
           onClick={handleFillDemoCredentials}
-          className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-md border border-emerald-500/30 transition-colors"
+          className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-100 dark:bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-500/30 transition-all active:scale-95"
         >
           <Sparkles className="w-3 h-3" />
           <span>Điền nhanh</span>
@@ -106,8 +106,8 @@ function LoginFormContent() {
 
       {/* Error Message Box */}
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/50 flex items-start gap-2.5 text-xs text-rose-300 animate-in fade-in duration-200">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300 animate-in fade-in duration-200">
+          <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
           <span className="leading-relaxed">{errorMessage}</span>
         </div>
       )}
@@ -116,11 +116,11 @@ function LoginFormContent() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Field */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
             Địa chỉ Email
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
               <Mail className="w-4 h-4" />
             </div>
             <input
@@ -130,7 +130,7 @@ function LoginFormContent() {
               placeholder="ten@doanhnghiep.vn"
               autoComplete="email"
               required
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             />
           </div>
         </div>
@@ -138,7 +138,7 @@ function LoginFormContent() {
         {/* Password Field */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Mật khẩu
             </label>
             <span className="text-[11px] text-slate-400 cursor-not-allowed">
@@ -146,7 +146,7 @@ function LoginFormContent() {
             </span>
           </div>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
               <Lock className="w-4 h-4" />
             </div>
             <input
@@ -156,12 +156,12 @@ function LoginFormContent() {
               placeholder="••••••••••••"
               autoComplete="current-password"
               required
-              className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
@@ -179,9 +179,9 @@ function LoginFormContent() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-slate-900"
+              className="w-3.5 h-3.5 rounded bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500"
             />
-            <span className="text-xs text-slate-300">Ghi nhớ đăng nhập</span>
+            <span className="text-xs text-slate-600 dark:text-slate-300">Ghi nhớ đăng nhập</span>
           </label>
         </div>
 
@@ -189,7 +189,7 @@ function LoginFormContent() {
         <button
           type="submit"
           disabled={isSubmitting || authLoading}
-          className="w-full mt-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -206,12 +206,12 @@ function LoginFormContent() {
       </form>
 
       {/* Switch to Register */}
-      <div className="mt-6 pt-5 border-t border-slate-700/60 text-center">
-        <p className="text-xs text-slate-400">
+      <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800 text-center">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Chưa có tài khoản doanh nghiệp?{' '}
           <Link
-            href="/register"
-            className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors underline-offset-4 hover:underline"
+            href="/dang-ky"
+            className="font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors underline-offset-4 hover:underline"
           >
             Đăng ký dùng thử 14 ngày
           </Link>
@@ -225,8 +225,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full max-w-md bg-slate-800/90 rounded-2xl p-8 text-center text-slate-300 flex flex-col items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500 mb-2" />
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-8 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-500 mb-2" />
           <p className="text-xs">Đang tải trang đăng nhập...</p>
         </div>
       }

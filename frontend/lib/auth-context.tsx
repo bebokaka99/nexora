@@ -234,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setTenant(null);
     setAccessToken(null);
-    router.push('/login');
+    router.push('/dang-nhap');
   }, [router]);
 
   const refreshProfile = useCallback(async () => {

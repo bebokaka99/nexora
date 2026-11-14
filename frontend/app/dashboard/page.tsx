@@ -79,7 +79,7 @@ export default function DashboardDemoPage() {
   // Route Guard: Tự động chuyển hướng về trang đăng nhập nếu chưa xác thực
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace("/login?redirect=/dashboard");
+      router.replace("/dang-nhap?redirect=/quan-tri");
     }
   }, [isLoading, isAuthenticated, router]);
 
@@ -422,7 +422,7 @@ export default function DashboardDemoPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-3" />
         <p className="text-sm font-medium text-slate-300">Đang đồng bộ Workspace NEXORA...</p>
       </div>
     );
@@ -431,7 +431,7 @@ export default function DashboardDemoPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-3" />
         <p className="text-sm font-medium text-slate-300">Chưa đăng nhập. Đang chuyển hướng tới trang Đăng nhập...</p>
       </div>
     );
@@ -482,7 +482,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("overview")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "overview"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -513,7 +513,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("orders")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "orders"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -521,7 +521,7 @@ export default function DashboardDemoPage() {
               <ShoppingBag className="w-4 h-4 shrink-0" />
               <span>3. Đơn Hàng Đa Kênh</span>
             </div>
-            <span className="px-1.5 py-0.5 rounded-full bg-blue-500/30 text-blue-300 text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-[10px] font-bold">
               {orders.length}
             </span>
           </button>
@@ -531,7 +531,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("inventory")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "inventory"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -551,7 +551,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("channels")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "channels"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -568,7 +568,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("products")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "products"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -581,7 +581,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("chat")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "chat"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -599,7 +599,7 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("stores")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "stores"
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
@@ -681,7 +681,7 @@ export default function DashboardDemoPage() {
               disabled={isSyncingChannels}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isSyncingChannels ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isSyncingChannels ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Đồng Bộ Sàn</span>
             </button>
 
@@ -760,7 +760,7 @@ export default function DashboardDemoPage() {
                 <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow transition-shadow">
                   <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
                     <span>Số Đơn Hàng Mới</span>
-                    <span className="flex items-center text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
                       Đa kênh
                     </span>
                   </div>
@@ -788,7 +788,7 @@ export default function DashboardDemoPage() {
                     {totalAvailableStock} Cái
                   </div>
                   <div className="mt-2 text-[11px] text-slate-500">
-                    Đang giữ cho đơn online: <span className="font-semibold text-blue-600">28 cái</span>
+                    Đang giữ cho đơn online: <span className="font-semibold text-emerald-600">28 cái</span>
                   </div>
                 </div>
 
@@ -822,7 +822,7 @@ export default function DashboardDemoPage() {
                         Tỷ trọng doanh số từ 2 cửa hàng vật lý và các sàn TMĐT
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
                       Hôm nay
                     </span>
                   </div>
@@ -890,7 +890,7 @@ export default function DashboardDemoPage() {
                     <span>Đối soát chi phí sàn: Shopee (-11.5%), TikTok Shop (-9.8%)</span>
                     <button
                       onClick={() => setActiveTab("channels")}
-                      className="text-blue-600 font-semibold hover:underline flex items-center gap-1"
+                      className="text-emerald-600 font-semibold hover:underline flex items-center gap-1"
                     >
                       Chi tiết kênh <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -1432,7 +1432,7 @@ export default function DashboardDemoPage() {
                             onClick={() => setSelectedOrder(ord)}
                             className="hover:bg-slate-50/80 cursor-pointer transition-colors"
                           >
-                            <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
+                            <td className="py-3.5 px-4 font-mono font-bold text-emerald-600">
                               {ord.id}
                               <div className="text-[10px] text-slate-400 font-sans font-normal">{ord.createdAt}</div>
                             </td>
@@ -1472,7 +1472,7 @@ export default function DashboardDemoPage() {
                                   e.stopPropagation();
                                   setSelectedOrder(ord);
                                 }}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"
                                 title="Xem chi tiết"
                               >
                                 <Eye className="w-4 h-4" />
@@ -1503,7 +1503,7 @@ export default function DashboardDemoPage() {
                 </div>
                 <button
                   onClick={() => setShowTransferModal(true)}
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 flex items-center gap-2 shadow-sm shadow-blue-500/20"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center gap-2 shadow-sm shadow-emerald-500/20"
                 >
                   <ArrowLeftRight className="w-4 h-4" />
                   <span>Tạo Phiếu Chuyển Kho</span>
@@ -1529,8 +1529,8 @@ export default function DashboardDemoPage() {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white border border-slate-200">
-                  <div className="text-[10px] font-bold text-blue-600 uppercase">Đang Giữ Cho Sàn (Committed)</div>
-                  <div className="text-xl font-black text-blue-600 mt-1">
+                  <div className="text-[10px] font-bold text-emerald-600 uppercase">Đang Giữ Cho Sàn (Committed)</div>
+                  <div className="text-xl font-black text-emerald-600 mt-1">
                     {products.reduce((s, p) => s + p.committed, 0)} Sản phẩm
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Đơn hàng Shopee, TikTok chờ đóng gói</p>
@@ -1618,7 +1618,7 @@ export default function DashboardDemoPage() {
                   <button
                     onClick={handleTriggerChannelSync}
                     disabled={isSyncingChannels}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 flex items-center gap-2 shadow-sm shadow-blue-500/20"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center gap-2 shadow-sm shadow-emerald-500/20"
                   >
                     <RefreshCw className={`w-4 h-4 ${isSyncingChannels ? "animate-spin" : ""}`} />
                     <span>{isSyncingChannels ? "Đang đồng bộ..." : "Đồng bộ tồn kho ngay"}</span>
@@ -1636,7 +1636,7 @@ export default function DashboardDemoPage() {
                           <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">
                             {ch.platform === "Shopee" && <span className="text-amber-600 font-extrabold">SP</span>}
                             {ch.platform === "TikTok Shop" && <span className="text-sky-600 font-extrabold">TT</span>}
-                            {ch.platform === "Facebook" && <span className="text-blue-600 font-extrabold">FB</span>}
+                            {ch.platform === "Facebook" && <span className="text-emerald-600 font-extrabold">FB</span>}
                             {ch.platform === "Lazada" && <span className="text-indigo-600 font-extrabold">LZ</span>}
                           </div>
                           <div>
@@ -1663,7 +1663,7 @@ export default function DashboardDemoPage() {
                         </div>
                         <div className="p-3 bg-slate-50 rounded-xl">
                           <span className="text-slate-400 text-[10px] block">Đơn hàng chờ xử lý</span>
-                          <span className="font-bold text-blue-600 text-sm">{ch.pendingOrders} Đơn</span>
+                          <span className="font-bold text-emerald-600 text-sm">{ch.pendingOrders} Đơn</span>
                         </div>
                       </div>
                     </div>
@@ -1672,7 +1672,7 @@ export default function DashboardDemoPage() {
                       <span>Đồng bộ gần nhất: <strong className="text-slate-700">{ch.lastSyncedAt}</strong></span>
                       <button
                         onClick={handleTriggerChannelSync}
-                        className="text-blue-600 font-semibold hover:underline flex items-center gap-1"
+                        className="text-emerald-600 font-semibold hover:underline flex items-center gap-1"
                       >
                         <RefreshCw className="w-3 h-3" /> Đồng bộ lại
                       </button>
@@ -1700,7 +1700,7 @@ export default function DashboardDemoPage() {
                   <div key={p.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between text-[10px] mb-2">
-                        <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                        <span className="font-bold text-blue-700 bg-emerald-50 px-2 py-0.5 rounded">
                           {p.categoryName}
                         </span>
                         <span className="text-slate-400 font-mono">{p.sku}</span>
@@ -1744,14 +1744,14 @@ export default function DashboardDemoPage() {
                       key={c.id}
                       onClick={() => setSelectedConv(c)}
                       className={`p-3.5 cursor-pointer transition-colors ${
-                        selectedConv.id === c.id ? "bg-blue-50/70 border-l-4 border-blue-600" : "hover:bg-slate-50"
+                        selectedConv.id === c.id ? "bg-emerald-50/70 border-l-4 border-blue-600" : "hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-slate-900">{c.customerName}</span>
                         <span className="text-[10px] text-slate-400">{c.lastTime}</span>
                       </div>
-                      <div className="text-[10px] text-blue-600 font-semibold mt-0.5">{c.platform}</div>
+                      <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">{c.platform}</div>
                       <p className="text-xs text-slate-600 mt-1 line-clamp-1">{c.lastMessage}</p>
                     </div>
                   ))}
@@ -1795,7 +1795,7 @@ export default function DashboardDemoPage() {
                       triggerToast("Đã gửi tin nhắn phản hồi thành công!");
                       setChatMessage("");
                     }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 flex items-center gap-1"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 flex items-center gap-1"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Gửi</span>
@@ -1868,7 +1868,7 @@ export default function DashboardDemoPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
-                <span className="font-mono text-xs font-bold text-blue-600">{selectedOrder.id}</span>
+                <span className="font-mono text-xs font-bold text-emerald-600">{selectedOrder.id}</span>
                 <h3 className="font-bold text-base text-slate-900 mt-0.5">Chi Tiết Đơn Hàng</h3>
               </div>
               <button
@@ -1888,7 +1888,7 @@ export default function DashboardDemoPage() {
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] block">Kênh bán & Trạng thái</span>
-                  <strong className="text-blue-600">{selectedOrder.channelLabel}</strong>
+                  <strong className="text-emerald-600">{selectedOrder.channelLabel}</strong>
                   <div className="text-slate-500 text-[11px]">{selectedOrder.statusLabel}</div>
                 </div>
               </div>
@@ -1920,7 +1920,7 @@ export default function DashboardDemoPage() {
 
               <div className="flex items-center justify-between pt-2 text-sm font-bold border-t border-slate-100">
                 <span>Tổng tiền thanh toán:</span>
-                <span className="text-blue-600 text-base">{selectedOrder.totalAmount.toLocaleString("vi-VN")} ₫</span>
+                <span className="text-emerald-600 text-base">{selectedOrder.totalAmount.toLocaleString("vi-VN")} ₫</span>
               </div>
             </div>
 
@@ -1930,7 +1930,7 @@ export default function DashboardDemoPage() {
                   triggerToast(`Đã in phiếu đóng gói cho đơn hàng ${selectedOrder.id}`);
                   setSelectedOrder(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 flex items-center justify-center gap-1.5 shadow-sm"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Printer className="w-4 h-4" />
                 <span>In Phiếu Đóng Gói</span>
@@ -1954,7 +1954,7 @@ export default function DashboardDemoPage() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <ArrowLeftRight className="w-4 h-4 text-blue-600" />
+                <ArrowLeftRight className="w-4 h-4 text-emerald-600" />
                 <h3 className="font-bold text-sm text-slate-900">Tạo Phiếu Chuyển Kho Nội Bộ</h3>
               </div>
               <button
@@ -2020,7 +2020,7 @@ export default function DashboardDemoPage() {
             <div className="pt-3 border-t border-slate-100 flex gap-3">
               <button
                 onClick={handleExecuteTransfer}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 flex items-center justify-center gap-1.5 shadow-sm"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Check className="w-4 h-4" />
                 <span>Xác Nhận Chuyển Kho</span>
