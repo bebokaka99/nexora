@@ -1,14 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Layers,
   ShieldCheck,
   Zap,
-  Store,
-  Boxes,
   ArrowLeft,
   CheckCircle2,
 } from 'lucide-react';
+import { DarkModeToggle } from '@/components/dark-mode-toggle';
 
 export default function AuthLayout({
   children,
@@ -18,33 +16,25 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-between text-slate-100">
       {/* Top Navbar */}
-      <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight text-white">
-                NEXORA
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                Commerce OS
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400 hidden sm:block">
-              One Platform. Every Channel. Complete Control.
-            </p>
-          </div>
+      <header className="px-6 py-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md">
+        <Link href="/" className="flex items-center group">
+          <img
+            src="/logo.png"
+            alt="NEXORA"
+            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+          />
         </Link>
 
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-800"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Về trang chủ</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <DarkModeToggle />
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-800 border border-transparent hover:border-slate-700"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Về trang chủ</span>
+          </Link>
+        </div>
       </header>
 
       {/* Main Container */}
@@ -52,8 +42,8 @@ export default function AuthLayout({
         <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Brand Showcase (Visible on Large Screens) */}
           <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 pr-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold w-fit">
-              <Zap className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold w-fit">
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>Nền tảng Quản trị Bán lẻ Hợp nhất</span>
             </div>
 
@@ -62,7 +52,7 @@ export default function AuthLayout({
             </h2>
 
             <p className="text-sm text-slate-400 leading-relaxed">
-              Giải pháp SaaS Multi-Tenant chuyên biệt cho doanh nghiệp bán lẻ gia dụng. Đồng bộ tồn kho tức thời giữa cửa hàng vật lý và sàn Shopee, TikTok Shop, Facebook.
+              Giải pháp SaaS chuyên biệt cho doanh nghiệp và nhà bán hàng hiện đại. Đồng bộ tồn kho tức thời giữa cửa hàng vật lý và các kênh bán Shopee, TikTok Shop, Facebook.
             </p>
 
             <div className="space-y-3 pt-2 text-xs text-slate-300">
@@ -85,7 +75,7 @@ export default function AuthLayout({
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div className="text-[11px] text-slate-300">
@@ -104,7 +94,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <footer className="py-4 px-6 text-center text-xs text-slate-500 border-t border-slate-800/60">
-        <p>© 2026 NEXORA Commerce OS. Bản quyền thuộc về nền tảng điều hành bán lẻ hợp nhất.</p>
+        <p>© 2026 NEXORA. Bản quyền thuộc về nền tảng điều hành bán lẻ hợp nhất.</p>
       </footer>
     </div>
   );

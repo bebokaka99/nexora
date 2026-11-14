@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme-context";
 
 export const metadata: Metadata = {
-  title: "NEXORA — Commerce Management Platform",
-  description: "One Platform. Every Channel. Complete Control. Nền tảng quản lý hoạt động kinh doanh đa kênh hợp nhất dành cho doanh nghiệp bán lẻ hiện đại.",
+  title: "NEXORA — Nền Tảng Quản Trị Bán Lẻ Đa Kênh Hợp Nhất",
+  description: "NEXORA kết nối và tự động hóa toàn bộ hoạt động kinh doanh: quầy thu ngân POS, quản lý kho hàng và đồng bộ sàn Shopee, TikTok Shop, Facebook.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.png",
   },
 };
 
@@ -16,9 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="scroll-smooth">
-      <body className="antialiased min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="vi" className="scroll-smooth" suppressHydrationWarning>
+      <body className="antialiased min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 selection:bg-emerald-600 selection:text-white transition-colors duration-200">
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

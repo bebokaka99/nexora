@@ -236,7 +236,7 @@ export default function RegisterPage() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="0912 345 678"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
               />
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@anthinh.vn"
               required
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             />
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function RegisterPage() {
               placeholder="••••••••••••"
               minLength={8}
               required
-              className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
             />
             <button
               type="button"
@@ -301,10 +301,10 @@ export default function RegisterPage() {
               type="checkbox"
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="mt-0.5 w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-blue-600 focus:ring-blue-500"
+              className="mt-0.5 w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-emerald-600 focus:ring-emerald-500"
             />
             <span className="text-[11px] text-slate-300 leading-relaxed">
-              Tôi đồng ý với Quy chế sử dụng dịch vụ và Chính sách bảo mật dữ liệu khách hàng của NEXORA Commerce OS.
+              Tôi đồng ý với Quy chế sử dụng dịch vụ và Chính sách bảo mật dữ liệu khách hàng của NEXORA.
             </span>
           </label>
         </div>
@@ -313,7 +313,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isSubmitting || authLoading}
-          className="w-full mt-3 py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white font-semibold text-xs shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-3 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -335,7 +335,7 @@ export default function RegisterPage() {
           Đã có tài khoản doanh nghiệp?{' '}
           <Link
             href="/login"
-            className="font-semibold text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
+            className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors underline-offset-4 hover:underline"
           >
             Đăng nhập ngay
           </Link>

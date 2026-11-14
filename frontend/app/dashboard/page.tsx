@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import {
   Layers,
   LayoutDashboard,
@@ -444,21 +445,15 @@ export default function DashboardDemoPage() {
       <aside className="w-64 bg-slate-950 text-slate-300 flex flex-col shrink-0 border-r border-slate-800">
         {/* Sidebar Brand Header */}
         <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <Layers className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="font-extrabold text-base tracking-tight text-white block leading-tight">
-                NEXORA
-              </span>
-              <span className="text-[10px] text-blue-400 font-mono tracking-wider uppercase">
-                Commerce OS
-              </span>
-            </div>
+          <Link href="/" className="flex items-center group">
+            <img
+              src="/logo.png"
+              alt="NEXORA"
+              className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-            DEMO
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            PRO
           </span>
         </div>
 
@@ -689,6 +684,9 @@ export default function DashboardDemoPage() {
               <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isSyncingChannels ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Đồng Bộ Sàn</span>
             </button>
+
+            {/* Dark Mode Toggle */}
+            <DarkModeToggle />
 
             {/* Notification Bell */}
             <div className="relative">
