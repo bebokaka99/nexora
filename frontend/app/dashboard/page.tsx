@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import {
   Layers,
   LayoutDashboard,
@@ -46,7 +48,9 @@ import {
   Minus,
   ShoppingCart,
   Receipt,
-  Sparkles
+  Sparkles,
+  LogOut,
+  Loader2
 } from "lucide-react";
 import {
   MOCK_PRODUCTS,
@@ -68,6 +72,16 @@ import {
 // =============================================================================
 
 export default function DashboardDemoPage() {
+  const router = useRouter();
+  const { user, tenant, isAuthenticated, isLoading, logout } = useAuth();
+
+  // Route Guard: Tự động chuyển hướng về trang đăng nhập nếu chưa xác thực
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/login?redirect=/dashboard");
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<
     "overview" | "pos" | "orders" | "products" | "inventory" | "chat" | "channels" | "stores"
@@ -403,6 +417,25 @@ export default function DashboardDemoPage() {
     (p) => Math.max(0, p.stockStore1 + p.stockStore2 - p.committed) <= 5
   ).length;
 
+  // Trạng thái kiểm tra xác thực và bảo vệ tuyến đường
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+        <p className="text-sm font-medium text-slate-300">Đang đồng bộ Workspace NEXORA...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
+        <p className="text-sm font-medium text-slate-300">Chưa đăng nhập. Đang chuyển hướng tới trang Đăng nhập...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
       {/* =======================================================================
@@ -436,8 +469,12 @@ export default function DashboardDemoPage() {
               <Store className="w-3.5 h-3.5" />
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">Gia Dụng Hiện Đại</div>
-              <div className="text-[10px] text-slate-400 truncate">2 Cửa Hàng • 3 Kênh Sàn</div>
+              <div className="text-xs font-bold text-white truncate" title={tenant?.name || "Gia Dụng Hiện Đại"}>
+                {tenant?.name || "Gia Dụng Hiện Đại"}
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                {tenant?.slug ? `@${tenant.slug}` : "2 Cửa Hàng • 3 Kênh Sàn"}
+              </div>
             </div>
           </div>
           <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -576,23 +613,36 @@ export default function DashboardDemoPage() {
           </button>
         </nav>
 
-        {/* Sidebar Footer User Info */}
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center font-bold text-xs text-white shadow-sm">
-              AD
+        {/* Sidebar Footer User Info & Logout */}
+        <div className="p-3 border-t border-slate-800 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center font-bold text-xs text-white shadow-sm shrink-0">
+              {user?.fullName
+                ? user.fullName
+                    .split(" ")
+                    .slice(-2)
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()
+                : "AD"}
             </div>
-            <div>
-              <div className="text-xs font-bold text-white">Quản Trị Viên</div>
+            <div className="overflow-hidden">
+              <div className="text-xs font-bold text-white truncate" title={user?.fullName || "Quản Trị Viên"}>
+                {user?.fullName || "Quản Trị Viên"}
+              </div>
               <div className="text-[10px] text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span>Trực Tuyến</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="truncate">{user?.role || "ADMIN"} • Trực Tuyến</span>
               </div>
             </div>
           </div>
-          <Link href="/" className="text-slate-400 hover:text-white p-1" title="Về trang chủ">
-            <ExternalLink className="w-4 h-4" />
-          </Link>
+          <button
+            onClick={logout}
+            className="text-slate-400 hover:text-rose-400 hover:bg-slate-800 p-1.5 rounded-lg transition-colors shrink-0"
+            title="Đăng xuất khỏi Workspace"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </aside>
 
@@ -645,6 +695,26 @@ export default function DashboardDemoPage() {
               <button className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 relative">
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500" />
+              </button>
+            </div>
+
+            {/* Header User Badge & Logout */}
+            <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+              <div className="hidden sm:flex flex-col text-right">
+                <span className="text-xs font-bold text-slate-800 leading-tight">
+                  {user?.fullName || "Nguyễn Văn Quản Trị"}
+                </span>
+                <span className="text-[10px] text-slate-500 leading-tight">
+                  {tenant?.name || "Gia Dụng Hiện Đại"}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors"
+                title="Đăng xuất khỏi Workspace"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Đăng xuất</span>
               </button>
             </div>
           </div>

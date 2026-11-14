@@ -74,18 +74,24 @@ export default function HomePage() {
           </nav>
 
           {/* CTA Actions */}
-          <div className="flex items-center gap-3">
-            <a
-              href="#overview"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all border border-slate-300"
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-slate-200/80 transition-all border border-slate-300"
             >
-              <span>Tài liệu /docs</span>
-            </a>
+              <span>Đăng nhập</span>
+            </Link>
+            <Link
+              href="/register"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all border border-blue-200"
+            >
+              <span>Dùng thử 14 ngày</span>
+            </Link>
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/30 transition-all hover:scale-[1.02]"
             >
-              <span>Vào Demo Dashboard</span>
+              <span>Vào Workspace</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

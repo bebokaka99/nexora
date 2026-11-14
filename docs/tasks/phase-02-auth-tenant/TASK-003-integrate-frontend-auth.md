@@ -3,7 +3,7 @@
 - **Mã nhiệm vụ**: `TASK-003`
 - **Giai đoạn**: `Phase 02 - Auth & Multi-Tenancy`
 - **Epic**: `EPIC-02-D`
-- **Trạng thái**: `TODO`
+- **Trạng thái**: `DONE` (Hoàn thành)
 - **Người thực hiện**: Frontend Engineer
 - **Độ ưu tiên**: Cao nhất (P0)
 
@@ -31,8 +31,8 @@ Thay thế trạng thái đăng nhập giả lập bằng luồng xác thực th
 5. Cập nhật Sidebar và Header trong `/dashboard` để hiển thị tên thật của người dùng, tên Tenant và nút Đăng xuất an toàn.
 
 ## 4. Tiêu chí nghiệm thu (Acceptance Criteria)
-- [ ] Người dùng truy cập `http://localhost:3000/login` và nhập đúng tài khoản mẫu `admin@nexora.vn` / `Nexora@2026` được chuyển hướng vào `/dashboard`.
-- [ ] Nhập sai mật khẩu hiển thị thông báo lỗi rõ ràng `"Email hoặc mật khẩu không chính xác"`.
-- [ ] Header và Sidebar hiển thị đúng tên người dùng `Nguyễn Văn Quản Trị` và tên doanh nghiệp `Gia Dụng Hiện Đại`.
-- [ ] Bấm nút Đăng xuất xóa sạch Token và chuyển hướng về màn hình `/login`.
-- [ ] Người dùng chưa đăng nhập cố tình gõ trực tiếp `http://localhost:3000/dashboard` hoặc `/pos` bị chuyển hướng về `/login`.
+- [x] Người dùng truy cập `http://localhost:3000/login` và nhập đúng tài khoản mẫu `admin@nexora.vn` / `Nexora@2026` được chuyển hướng vào `/dashboard`.
+- [x] Nhập sai mật khẩu hiển thị thông báo lỗi rõ ràng `"Email hoặc mật khẩu không chính xác"`.
+- [x] Header và Sidebar hiển thị đúng tên người dùng `Nguyễn Văn Quản Trị` và tên doanh nghiệp `Gia Dụng Hiện Đại`.
+- [x] Bấm nút Đăng xuất xóa sạch Token và chuyển hướng về màn hình `/login`.
+- [x] Người dùng chưa đăng nhập cố tình gõ trực tiếp `http://localhost:3000/dashboard` hoặc `/pos` bị chuyển hướng về `/login`.
