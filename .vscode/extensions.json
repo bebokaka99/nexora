@@ -1,0 +1,28 @@
+{
+  "recommendations": [
+    // --- 1. Essential (Bắt buộc / Rất cần thiết) ---
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "Prisma.prisma",
+    "bradlc.vscode-tailwindcss",
+    "eamodio.gitlens",
+
+    // --- 2. Recommended (Nên sử dụng cho dự án NEXORA) ---
+    "ms-azuretools.vscode-docker",
+    "humao.rest-client",
+    "mikestead.dotenv",
+    "usernamehw.errorlens",
+    "christian-kohler.path-intellisense",
+    "yzhang.markdown-all-in-one",
+    "tamasfe.even-better-toml",
+    "GitHub.vscode-pull-request-github",
+
+    // --- 3. Optional (Khuyến nghị bổ sung khi cần) ---
+    "bierner.markdown-mermaid",
+    "SonarSource.sonarlint-vscode",
+    "PKief.material-icon-theme",
+    "johnpapa.peacock",
+    "ckolkman.vscode-postgres"
+  ],
+  "unwantedRecommendations": []
+}
