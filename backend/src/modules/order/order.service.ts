@@ -187,6 +187,43 @@ export class OrderService {
   }
 
   /**
+   * TASK-015: resolve kho xuất kho cho đơn hàng mà không dùng ID hardcode.
+   * - dto.warehouseId có thì dùng luôn (caller chịu trách nhiệm ID tồn tại).
+   * - Không có thì lấy Store.defaultWarehouseId của cửa hàng (seed tạo
+   *   store CN1 trỏ về kho KHO-CN1 bằng uuid thật).
+   * - Cửa hàng không có kho mặc định (hoặc storeId là ID mock cũ như
+   *   'store1' không có trong DB) thì lấy kho active đầu tiên của tenant.
+   * - Tenant chưa có kho active nào thì throw BadRequestException với
+   *   thông báo rõ ràng, thay vì để reserveOrDeductStock / FK lỗi khó hiểu.
+   */
+  private async resolveWarehouseId(
+    tenantId: string,
+    warehouseId?: string | null,
+    storeId?: string | null,
+  ): Promise<string> {
+    if (warehouseId) return warehouseId;
+
+    if (storeId) {
+      const store = await this.prisma.store.findFirst({
+        where: { tenantId, id: storeId },
+        select: { defaultWarehouseId: true },
+      });
+      if (store?.defaultWarehouseId) return store.defaultWarehouseId;
+    }
+
+    const firstActive = await this.prisma.warehouse.findFirst({
+      where: { tenantId, isActive: true },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    if (firstActive) return firstActive.id;
+
+    throw new BadRequestException(
+      'Tenant chưa có kho hàng active nào để xuất kho. Vui lòng tạo kho trước khi tạo đơn hàng.',
+    );
+  }
+
+  /**
    * Tạo đơn hàng mới (POS Bán lẻ hoặc Đơn Online/Chat)
    * Tự động áp dụng Business Rules BR-ORD-001 và BR-ORD-002
    */
@@ -206,8 +243,14 @@ export class OrderService {
     const prefix = isPos ? 'POS' : channel === ChannelTypeEnum.SHOPEE ? 'ORD-SP' : channel === ChannelTypeEnum.TIKTOK_SHOP ? 'ORD-TT' : 'ORD-FB';
     const orderNumber = `${prefix}-${orderSeq}`;
 
-    // Xác định kho hàng xử lý
-    const warehouseId = dto.warehouseId || (dto.storeId === 'store-002-binh-thanh' ? 'wh-002-binh-thanh' : isPos ? 'wh-001-q1' : 'wh-003-central');
+    // Xác định kho hàng xử lý (TASK-015): không dùng ID hardcode nữa.
+    // Thứ tự: kho DTO gửi lên -> kho mặc định của cửa hàng -> kho active
+    // đầu tiên của tenant. Không có kho nào thì lỗi rõ ràng thay vì lỗi FK.
+    const warehouseId = await this.resolveWarehouseId(
+      tenantId,
+      dto.warehouseId,
+      dto.storeId,
+    );
 
     // 1. Áp dụng quy tắc tồn kho tương ứng
     for (const item of dto.items) {
