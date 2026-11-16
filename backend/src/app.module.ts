@@ -4,8 +4,12 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenantModule } from './modules/tenant/tenant.module';
-import { WarehouseModule } from './modules/warehouse/warehouse.module';
 import { StoreModule } from './modules/store/store.module';
+import { WarehouseModule } from './modules/warehouse/warehouse.module';
+import { ProductModule } from './modules/product/product.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { OrderModule } from './modules/order/order.module';
+import { ChannelModule } from './modules/channel/channel.module';
 
 @Module({
   imports: [
@@ -19,6 +23,10 @@ import { StoreModule } from './modules/store/store.module';
     TenantModule,
     WarehouseModule,
     StoreModule,
+    ProductModule,
+    InventoryModule,
+    OrderModule,
+    ChannelModule,
   ],
 })
 export class AppModule {}

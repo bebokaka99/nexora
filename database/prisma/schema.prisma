@@ -37,6 +37,8 @@ model Tenant {
   orders       Order[]
   customers    Customer[]
   channels     ChannelConnection[]
+  stockTransfers StockTransfer[]
+  inventoryTransactions InventoryTransaction[]
 
   @@map("tenants")
 }
@@ -188,6 +190,9 @@ model Warehouse {
   stores      Store[]       @relation("StoreDefaultWarehouse")
   inventories Inventory[]
   orders      Order[]
+  transfersFrom StockTransfer[] @relation("TransfersFrom")
+  transfersTo   StockTransfer[] @relation("TransfersTo")
+  inventoryTransactions InventoryTransaction[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -255,6 +260,8 @@ model ProductVariant {
   product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventories  Inventory[]
   orderItems   OrderItem[]
+  transferItems StockTransferItem[]
+  inventoryTransactions InventoryTransaction[]
 
   @@unique([tenantId, sku])
   @@index([tenantId, sku])
@@ -278,6 +285,77 @@ model Inventory {
   @@unique([tenantId, warehouseId, variantId])
   @@index([tenantId, warehouseId])
   @@map("inventories")
+}
+
+enum StockTransferStatus {
+  PENDING
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+enum InventoryTransactionType {
+  RECEIPT
+  TRANSFER_OUT
+  TRANSFER_IN
+  POS_SALE
+  COMMITTED_RESERVE
+  COMMITTED_RELEASE
+  ADJUSTMENT
+}
+
+model StockTransfer {
+  id                String              @id @default(uuid())
+  tenantId          String              @map("tenant_id") @db.VarChar(36)
+  transferNumber    String              @map("transfer_number") @db.VarChar(50)
+  sourceWarehouseId String              @map("source_warehouse_id") @db.VarChar(36)
+  targetWarehouseId String              @map("target_warehouse_id") @db.VarChar(36)
+  status            StockTransferStatus @default(PENDING)
+  notes             String?             @db.Text
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceWarehouse Warehouse           @relation("TransfersFrom", fields: [sourceWarehouseId], references: [id])
+  targetWarehouse Warehouse           @relation("TransfersTo", fields: [targetWarehouseId], references: [id])
+  items           StockTransferItem[]
+
+  @@unique([tenantId, transferNumber])
+  @@index([tenantId, status])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id         String         @id @default(uuid())
+  transferId String         @map("transfer_id") @db.VarChar(36)
+  variantId  String         @map("variant_id") @db.VarChar(36)
+  quantity   Int
+
+  transfer   StockTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@map("stock_transfer_items")
+}
+
+model InventoryTransaction {
+  id            String                   @id @default(uuid())
+  tenantId      String                   @map("tenant_id") @db.VarChar(36)
+  warehouseId   String                   @map("warehouse_id") @db.VarChar(36)
+  variantId     String                   @map("variant_id") @db.VarChar(36)
+  type          InventoryTransactionType
+  quantity      Int
+  balanceOnHand Int                      @map("balance_on_hand")
+  referenceId   String?                  @map("reference_id") @db.VarChar(100)
+  note          String?                  @db.Text
+  createdAt     DateTime                 @default(now()) @map("created_at")
+
+  tenant        Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse     Warehouse                @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  variant       ProductVariant           @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, warehouseId, variantId])
+  @@index([tenantId, createdAt])
+  @@map("inventory_transactions")
 }
 
 // =============================================================================

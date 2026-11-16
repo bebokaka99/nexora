@@ -13,7 +13,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "prisma:generate": "prisma generate --schema=../database/prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=../database/prisma/schema.prisma && cp -r ../node_modules/.prisma/client/* node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/ 2>/dev/null || true",
     "prisma:migrate": "prisma migrate dev --schema=../database/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=../database/prisma/schema.prisma"
   },

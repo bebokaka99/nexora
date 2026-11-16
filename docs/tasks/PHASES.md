@@ -30,6 +30,7 @@ Tài liệu này định nghĩa chi tiết lộ trình phát triển nền tản
   - Xử lý khóa phân tán ngăn chặn bán vượt tồn kho.
 - **Nhiệm vụ trọng tâm**:
   - `TASK-004: Implement Stores & Warehouses Core` (Đã hoàn thành).
+  - `TASK-005: Implement Inventory Management & Stock Transfers` (Đã hoàn thành).
 
 ## Giai đoạn 04. Quản lý sản phẩm và Danh mục hàng gia dụng (Product Catalog)
 
@@ -38,6 +39,8 @@ Tài liệu này định nghĩa chi tiết lộ trình phát triển nền tản
   - Biểu mẫu tạo sản phẩm đa biến thể với hình ảnh và thông số kỹ thuật.
   - Công cụ tìm kiếm sản phẩm nhanh bằng mã vạch phục vụ quầy bán lẻ.
   - Cấu trúc giá bán sỉ, giá bán lẻ và giá khuyến mãi.
+- **Nhiệm vụ trọng tâm**:
+  - `TASK-006: Implement Product Catalog & Multi-Variants Management` (Đã hoàn thành).
 
 ## Giai đoạn 05. Bán hàng tại quầy và Quản lý đơn hàng (POS & Order Lifecycle)
 
@@ -46,6 +49,8 @@ Tài liệu này định nghĩa chi tiết lộ trình phát triển nền tản
   - Giao diện POS tối ưu hóa cho màn hình cảm ứng, hỗ trợ quét mã vạch và in hóa đơn nhiệt.
   - Máy trạng thái quản lý đơn hàng từ lúc đặt đến khi hoàn tất hoặc hủy đơn.
   - Cơ chế tự động trừ tồn thực tế tại quầy hoặc giữ tồn đối với đơn online.
+- **Nhiệm vụ trọng tâm**:
+  - `TASK-007: Implement POS Terminal & Unified Order Management Lifecycle` (Đã hoàn thành).
 
 ## Giai đoạn 06. Kết nối đa kênh trực tuyến (Omnichannel Integrations)
 

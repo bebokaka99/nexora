@@ -7,94 +7,57 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { LoginDto, RefreshTokenDto } from './dto/auth.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Public, Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
+@UseGuards(AuthGuard, RolesGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Đăng ký tài khoản Tenant mới',
-    description: 'Tạo doanh nghiệp bán lẻ mới trên NEXORA kèm tài khoản Super/Tenant Admin và cấp 14 ngày dùng thử miễn phí.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Đăng ký thành công, trả về Access Token và Refresh Token.',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Mã slug doanh nghiệp hoặc email đã được sử dụng.',
-  })
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
-  }
-
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Đăng nhập vào hệ thống',
-    description: 'Xác thực tài khoản bằng Email và Mật khẩu, trả về cặp JWT Token cùng thông tin Tenant.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Đăng nhập thành công.',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Email hoặc mật khẩu không chính xác.',
-  })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  @ApiOperation({ summary: 'Đăng nhập người dùng bằng Email & Mật khẩu' })
+  @ApiResponse({ status: 200, description: 'Đăng nhập thành công, trả về Access Token và Refresh Token' })
+  @ApiResponse({ status: 401, description: 'Sai tài khoản hoặc mật khẩu' })
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
+  @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Làm mới Access Token',
-    description: 'Cấp Access Token mới (15 phút) từ Refresh Token hợp lệ.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Cấp token mới thành công.',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Refresh token không hợp lệ hoặc đã hết hạn.',
-  })
-  async refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refresh(dto);
+  @ApiOperation({ summary: 'Làm mới Access Token bằng Refresh Token' })
+  @ApiResponse({ status: 200, description: 'Cấp Access Token mới thành công' })
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @Get('profile')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Lấy thông tin tài khoản hiện tại',
-    description: 'Trả về hồ sơ cá nhân và thông tin doanh nghiệp từ Bearer JWT Token hợp lệ.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lấy thông tin tài khoản thành công.',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Chưa đăng nhập hoặc Token không hợp lệ.',
-  })
-  async getMe(@CurrentUser() user: AuthenticatedUser) {
-    return this.authService.getMe(user.id);
+  @ApiOperation({ summary: 'Lấy thông tin tài khoản hiện tại từ Access Token' })
+  @ApiResponse({ status: 200, description: 'Trả về thông tin payload của user' })
+  async getProfile(@CurrentUser() user: any) {
+    return this.authService.getProfile(user);
+  }
+
+  @Get('admin-only')
+  @Roles('TENANT_ADMIN')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Endpoint thử nghiệm phân quyền (Chỉ dành cho TENANT_ADMIN)' })
+  @ApiResponse({ status: 200, description: 'Quyền hợp lệ' })
+  @ApiResponse({ status: 403, description: 'Không đủ quyền' })
+  async testAdminOnly(@CurrentUser() user: any) {
+    return {
+      message: 'Chúc mừng! Bạn đang truy cập với quyền TENANT_ADMIN.',
+      user,
+    };
   }
 }

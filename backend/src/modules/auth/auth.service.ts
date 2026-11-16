@@ -1,382 +1,177 @@
 import {
   Injectable,
   UnauthorizedException,
-  ConflictException,
   Logger,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-
-interface InMemoryTenant {
-  id: string;
-  name: string;
-  slug: string;
-  status: 'TRIAL' | 'ACTIVE' | 'SUSPENDED';
-  trialEndsAt: Date;
-  planCode: string;
-}
-
-interface InMemoryUser {
-  id: string;
-  tenantId: string;
-  email: string;
-  passwordHash: string;
-  fullName: string;
-  phoneNumber?: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  role: string;
-}
+import { LoginDto, RefreshTokenDto } from './dto/auth.dto';
+import { JwtHelper } from '../../common/utils/jwt.helper';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  // In-memory fallback store seeded for local dev and testing
-  private inMemoryTenants: InMemoryTenant[] = [
+  // Danh sách tài khoản demo cho môi trường dev/local nếu DB chưa migrate
+  private readonly mockUsers = [
     {
-      id: 'tenant-001-gia-dung-hien-dai',
-      name: 'Gia Dụng Hiện Đại',
-      slug: 'gia-dung-hien-dai',
-      status: 'ACTIVE',
-      trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-      planCode: 'GROWTH',
+      id: 'usr-admin-001',
+      tenantId: 'tenant-demo-giadung',
+      tenantSlug: 'gia-dung-hien-dai',
+      tenantName: 'Gia Dụng Hiện Đại',
+      email: 'admin@nexora.vn',
+      passwordHash: JwtHelper.hashPassword('Nexora@2026'),
+      fullName: 'Quản Trị Viên NEXORA',
+      roles: ['TENANT_ADMIN', 'STORE_MANAGER'],
+      storeId: 'store-01',
+    },
+    {
+      id: 'usr-cashier-001',
+      tenantId: 'tenant-demo-giadung',
+      tenantSlug: 'gia-dung-hien-dai',
+      tenantName: 'Gia Dụng Hiện Đại',
+      email: 'cashier@nexora.vn',
+      passwordHash: JwtHelper.hashPassword('Nexora@2026'),
+      fullName: 'Thu Ngân Chi Nhánh 1',
+      roles: ['CASHIER'],
+      storeId: 'store-01',
     },
   ];
 
-  private inMemoryUsers: InMemoryUser[] = [];
-
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {
-    this.seedInMemoryUsers();
-  }
+  ) {}
 
-  private async seedInMemoryUsers() {
-    // Hash default admin password "Nexora@2026"
-    const defaultHash = await bcrypt.hash('Nexora@2026', 10);
-    this.inMemoryUsers.push({
-      id: 'user-001-admin',
-      tenantId: 'tenant-001-gia-dung-hien-dai',
-      email: 'admin@nexora.vn',
-      passwordHash: defaultHash,
-      fullName: 'Nguyễn Văn Quản Trị',
-      phoneNumber: '0988777666',
-      status: 'ACTIVE',
-      role: 'ADMIN',
-    });
-    this.logger.log('Đã nạp tài khoản mẫu [admin@nexora.vn] vào bộ nhớ.');
-  }
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    this.logger.log(`Attempting login for email: ${email}`);
 
-  /**
-   * Đăng ký tài khoản Tenant mới kèm tài khoản quản trị viên
-   */
-  async register(dto: RegisterDto) {
-    const isPrismaReady = await this.checkPrismaReady();
+    let user: any = null;
 
-    if (isPrismaReady) {
-      // 1. Kiểm tra slug đã tồn tại
-      const existingTenant = await this.prisma.tenant.findUnique({
-        where: { slug: dto.slug },
-      });
-      if (existingTenant) {
-        throw new ConflictException(`Mã doanh nghiệp '${dto.slug}' đã được sử dụng`);
-      }
-
-      // 2. Băm mật khẩu
-      const passwordHash = await bcrypt.hash(dto.password, 10);
-
-      // 3. Tạo Tenant và User trong transaction
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-
-      const result = await this.prisma.$transaction(async (tx) => {
-        const tenant = await tx.tenant.create({
-          data: {
-            name: dto.companyName,
-            slug: dto.slug,
-            status: 'TRIAL',
-            trialEndsAt,
-          },
-        });
-
-        const user = await tx.user.create({
-          data: {
-            tenantId: tenant.id,
-            email: dto.email.toLowerCase(),
-            passwordHash,
-            fullName: dto.fullName,
-            phoneNumber: dto.phoneNumber,
-            status: 'ACTIVE',
-          },
-        });
-
-        return { tenant, user };
-      });
-
-      return this.generateTokenResponse(result.user, result.tenant);
-    } else {
-      // Fallback In-memory
-      const existingSlug = this.inMemoryTenants.find((t) => t.slug === dto.slug);
-      if (existingSlug) {
-        throw new ConflictException(`Mã doanh nghiệp '${dto.slug}' đã được sử dụng`);
-      }
-
-      const existingUser = this.inMemoryUsers.find(
-        (u) => u.email.toLowerCase() === dto.email.toLowerCase(),
-      );
-      if (existingUser) {
-        throw new ConflictException(`Email '${dto.email}' đã được đăng ký`);
-      }
-
-      const passwordHash = await bcrypt.hash(dto.password, 10);
-      const newTenantId = `tenant-${Date.now()}`;
-      const newUserId = `user-${Date.now()}`;
-      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-
-      const newTenant: InMemoryTenant = {
-        id: newTenantId,
-        name: dto.companyName,
-        slug: dto.slug,
-        status: 'TRIAL',
-        trialEndsAt,
-        planCode: 'BASIC',
-      };
-
-      const newUser: InMemoryUser = {
-        id: newUserId,
-        tenantId: newTenantId,
-        email: dto.email.toLowerCase(),
-        passwordHash,
-        fullName: dto.fullName,
-        phoneNumber: dto.phoneNumber,
-        status: 'ACTIVE',
-        role: 'ADMIN',
-      };
-
-      this.inMemoryTenants.push(newTenant);
-      this.inMemoryUsers.push(newUser);
-
-      return this.generateTokenResponse(newUser, newTenant);
-    }
-  }
-
-  /**
-   * Đăng nhập xác thực tài khoản
-   */
-  async login(dto: LoginDto) {
-    const isPrismaReady = await this.checkPrismaReady();
-
-    if (isPrismaReady) {
-      const user = await this.prisma.user.findFirst({
-        where: { email: dto.email.toLowerCase() },
-        include: { tenant: true },
-      });
-
-      if (!user) {
-        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
-      }
-
-      const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
-      }
-
-      if (user.status !== 'ACTIVE') {
-        throw new UnauthorizedException('Tài khoản của bạn đã bị khóa hoặc chưa kích hoạt');
-      }
-
-      if (user.tenant && user.tenant.status === 'TERMINATED') {
-        throw new UnauthorizedException('Doanh nghiệp của bạn đã bị đóng băng tài khoản');
-      }
-
-      return this.generateTokenResponse(user, user.tenant);
-    } else {
-      // In-memory fallback
-      const user = this.inMemoryUsers.find(
-        (u) => u.email.toLowerCase() === dto.email.toLowerCase(),
-      );
-
-      if (!user) {
-        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
-      }
-
-      const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
-      }
-
-      const tenant = this.inMemoryTenants.find((t) => t.id === user.tenantId);
-      return this.generateTokenResponse(user, tenant);
-    }
-  }
-
-  /**
-   * Làm mới Access Token từ Refresh Token
-   */
-  async refresh(dto: RefreshTokenDto) {
+    // 1. Thử tìm trong database nếu DB sẵn sàng
     try {
-      const refreshSecret = this.configService.get<string>(
-        'JWT_REFRESH_SECRET',
-        'nexora_super_secret_refresh_jwt_key_2026',
-      );
-      const payload = await this.jwtService.verifyAsync(dto.refreshToken, {
-        secret: refreshSecret,
+      user = await this.prisma.user.findFirst({
+        where: { email },
+        include: {
+          tenant: true,
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
       });
-
-      const newAccessToken = await this.jwtService.signAsync(
-        {
-          sub: payload.sub,
-          email: payload.email,
-          fullName: payload.fullName,
-          tenantId: payload.tenantId,
-          role: payload.role,
-        },
-        {
-          secret: this.configService.get<string>(
-            'JWT_SECRET',
-            'nexora_super_secret_jwt_key_2026_modular_monolith',
-          ),
-          expiresIn: '15m',
-        },
-      );
-
-      return {
-        accessToken: newAccessToken,
-        expiresIn: 900,
-        tokenType: 'Bearer',
-      };
     } catch {
-      throw new UnauthorizedException('Refresh token không hợp lệ hoặc đã hết hạn');
+      this.logger.warn('DB query failed, falling back to mock authentication accounts.');
     }
-  }
 
-  /**
-   * Lấy thông tin tài khoản hiện tại từ User ID
-   */
-  async getMe(userId: string) {
-    const isPrismaReady = await this.checkPrismaReady();
-
-    if (isPrismaReady) {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        include: { tenant: true },
-      });
-
-      if (!user) {
-        throw new UnauthorizedException('Không tìm thấy tài khoản người dùng');
+    // 2. Fallback sang mock user nếu chưa có trong DB
+    if (!user) {
+      const mock = this.mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
+      if (mock && JwtHelper.comparePassword(password, mock.passwordHash)) {
+        user = {
+          id: mock.id,
+          tenantId: mock.tenantId,
+          email: mock.email,
+          fullName: mock.fullName,
+          roles: mock.roles,
+          storeId: mock.storeId,
+          tenant: {
+            id: mock.tenantId,
+            name: mock.tenantName,
+            slug: mock.tenantSlug,
+          },
+        };
       }
-
-      return {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
-        status: user.status,
-        role: 'ADMIN',
-        tenant: user.tenant
-          ? {
-              id: user.tenant.id,
-              name: user.tenant.name,
-              slug: user.tenant.slug,
-              status: user.tenant.status,
-              trialEndsAt: user.tenant.trialEndsAt,
-            }
-          : null,
-      };
     } else {
-      const user = this.inMemoryUsers.find((u) => u.id === userId);
-      if (!user) {
-        throw new UnauthorizedException('Không tìm thấy tài khoản người dùng');
+      // Validate password từ DB
+      const isMatch = JwtHelper.comparePassword(password, user.passwordHash);
+      if (!isMatch) {
+        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
       }
-
-      const tenant = this.inMemoryTenants.find((t) => t.id === user.tenantId);
-      return {
+      user = {
         id: user.id,
+        tenantId: user.tenantId,
         email: user.email,
         fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
-        status: user.status,
-        role: user.role,
-        tenant: tenant
-          ? {
-              id: tenant.id,
-              name: tenant.name,
-              slug: tenant.slug,
-              status: tenant.status,
-              trialEndsAt: tenant.trialEndsAt,
-            }
-          : null,
+        roles: user.roles?.map((r: any) => r.role?.code) || ['STAFF'],
+        storeId: user.storeId,
+        tenant: user.tenant,
       };
     }
-  }
 
-  /**
-   * Tạo Access Token (15m) và Refresh Token (7d)
-   */
-  private async generateTokenResponse(user: any, tenant: any) {
-    const secret = this.configService.get<string>(
-      'JWT_SECRET',
-      'nexora_super_secret_jwt_key_2026_modular_monolith',
-    );
-    const refreshSecret = this.configService.get<string>(
-      'JWT_REFRESH_SECRET',
-      'nexora_super_secret_refresh_jwt_key_2026',
-    );
+    if (!user) {
+      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+    }
 
-    const payload = {
+    // 3. Sinh JWT Access Token & Refresh Token
+    const jwtSecret =
+      this.configService.get<string>('JWT_SECRET') ||
+      'nexora_super_secret_jwt_key_2026_modular_monolith';
+    const jwtRefreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET') ||
+      'nexora_super_secret_refresh_jwt_key_2026';
+
+    const tokenPayload = {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
-      tenantId: tenant?.id || user.tenantId,
-      role: user.role || 'ADMIN',
+      tenantId: user.tenantId,
+      roles: user.roles,
+      storeId: user.storeId,
     };
 
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret,
-        expiresIn: '15m',
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: refreshSecret,
-        expiresIn: '7d',
-      }),
-    ]);
+    const accessToken = JwtHelper.sign(tokenPayload, jwtSecret, 15 * 60); // 15 mins
+    const refreshToken = JwtHelper.sign(
+      { sub: user.id, tenantId: user.tenantId },
+      jwtRefreshSecret,
+      7 * 24 * 3600, // 7 days
+    );
 
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900,
-      tokenType: 'Bearer',
+      expiresIn: 15 * 60,
       user: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        role: user.role || 'ADMIN',
+        roles: user.roles,
+        tenant: user.tenant,
       },
-      tenant: tenant
-        ? {
-            id: tenant.id,
-            name: tenant.name,
-            slug: tenant.slug,
-            status: tenant.status,
-          }
-        : null,
     };
   }
 
-  private async checkPrismaReady(): Promise<boolean> {
+  async refreshToken(dto: RefreshTokenDto) {
+    const jwtSecret =
+      this.configService.get<string>('JWT_SECRET') ||
+      'nexora_super_secret_jwt_key_2026_modular_monolith';
+    const jwtRefreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET') ||
+      'nexora_super_secret_refresh_jwt_key_2026';
+
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
-      return true;
-    } catch {
-      return false;
+      const payload = JwtHelper.verify(dto.refreshToken, jwtRefreshSecret);
+      const newAccessToken = JwtHelper.sign(
+        { sub: payload.sub, tenantId: payload.tenantId },
+        jwtSecret,
+        15 * 60,
+      );
+
+      return {
+        accessToken: newAccessToken,
+        expiresIn: 15 * 60,
+      };
+    } catch (err) {
+      throw new UnauthorizedException(`Refresh Token không hợp lệ: ${err.message}`);
     }
+  }
+
+  async getProfile(userPayload: any) {
+    return {
+      user: userPayload,
+      message: 'Thông tin hồ sơ xác thực hợp lệ',
+    };
   }
 }

@@ -4,16 +4,13 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { JwtHelper } from '../utils/jwt.helper';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -28,7 +25,7 @@ export class JwtAuthGuard implements CanActivate {
         'JWT_SECRET',
         'nexora_super_secret_jwt_key_2026_modular_monolith',
       );
-      const payload = await this.jwtService.verifyAsync(token, { secret });
+      const payload = JwtHelper.verify(token, secret);
 
       // Gắn thông tin người dùng và ngữ cảnh doanh nghiệp vào request
       (request as any).user = {
@@ -36,7 +33,8 @@ export class JwtAuthGuard implements CanActivate {
         email: payload.email,
         fullName: payload.fullName,
         tenantId: payload.tenantId,
-        role: payload.role || 'ADMIN',
+        role: payload.role || payload.roles?.[0] || 'ADMIN',
+        roles: payload.roles || [payload.role || 'ADMIN'],
       };
       (request as any).tenantId = payload.tenantId;
 

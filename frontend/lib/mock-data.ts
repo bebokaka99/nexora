@@ -15,6 +15,7 @@ export interface ProductItem {
   imageColor: string;
   stockStore1: number; // Kho Cửa Hàng 1 (Quận 1)
   stockStore2: number; // Kho Cửa Hàng 2 (Bình Thạnh)
+  stockCentral?: number; // Kho Tổng Trung Tâm Tân Bình
   committed: number;   // Đang giữ cho đơn online
 }
 
@@ -132,6 +133,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-amber-500 to-orange-600",
     stockStore1: 14,
     stockStore2: 8,
+    stockCentral: 45,
     committed: 3,
   },
   {
@@ -147,6 +149,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-stone-700 to-slate-900",
     stockStore1: 8,
     stockStore2: 12,
+    stockCentral: 35,
     committed: 4,
   },
   {
@@ -162,6 +165,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-teal-600 to-emerald-700",
     stockStore1: 22,
     stockStore2: 18,
+    stockCentral: 60,
     committed: 2,
   },
   {
@@ -177,6 +181,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-zinc-700 to-stone-800",
     stockStore1: 30,
     stockStore2: 25,
+    stockCentral: 80,
     committed: 5,
   },
   {
@@ -192,6 +197,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-cyan-500 to-blue-600",
     stockStore1: 16,
     stockStore2: 10,
+    stockCentral: 40,
     committed: 2,
   },
   {
@@ -207,6 +213,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-slate-400 to-slate-600",
     stockStore1: 25,
     stockStore2: 20,
+    stockCentral: 55,
     committed: 3,
   },
   {
@@ -222,6 +229,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-sky-400 to-indigo-500",
     stockStore1: 9,
     stockStore2: 7,
+    stockCentral: 25,
     committed: 1,
   },
   {
@@ -237,6 +245,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-blue-600 to-slate-800",
     stockStore1: 4,
     stockStore2: 3,
+    stockCentral: 18,
     committed: 2,
   },
   {
@@ -252,6 +261,7 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     imageColor: "from-red-600 to-rose-700",
     stockStore1: 5,
     stockStore2: 4,
+    stockCentral: 15,
     committed: 1,
   },
   {
