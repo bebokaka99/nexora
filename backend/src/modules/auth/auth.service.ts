@@ -8,35 +8,18 @@ import { PrismaService } from '../../database/prisma.service';
 import { LoginDto, RefreshTokenDto } from './dto/auth.dto';
 import { JwtHelper } from '../../common/utils/jwt.helper';
 
+/**
+ * AuthService — TASK-009: đọc user trực tiếp từ PostgreSQL qua Prisma.
+ * Tài khoản demo hardcode (mockUsers) đã bị xóa. Không còn fallback
+ * in-memory: nếu DB chưa migrate / chưa seed, đăng nhập trả 401;
+ * nếu DB không kết nối được, Prisma ném lỗi và request fail rõ ràng
+ * thay vì lặng lẽ đăng nhập bằng tài khoản giả.
+ * Tài khoản admin seed: xem database/prisma/seed.ts (admin@nexora.vn,
+ * mật khẩu từ biến môi trường SEED_ADMIN_PASSWORD).
+ */
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-
-  // Danh sách tài khoản demo cho môi trường dev/local nếu DB chưa migrate
-  private readonly mockUsers = [
-    {
-      id: 'usr-admin-001',
-      tenantId: 'tenant-demo-giadung',
-      tenantSlug: 'gia-dung-hien-dai',
-      tenantName: 'Gia Dụng Hiện Đại',
-      email: 'admin@nexora.vn',
-      passwordHash: JwtHelper.hashPassword('Nexora@2026'),
-      fullName: 'Quản Trị Viên NEXORA',
-      roles: ['TENANT_ADMIN', 'STORE_MANAGER'],
-      storeId: 'store-01',
-    },
-    {
-      id: 'usr-cashier-001',
-      tenantId: 'tenant-demo-giadung',
-      tenantSlug: 'gia-dung-hien-dai',
-      tenantName: 'Gia Dụng Hiện Đại',
-      email: 'cashier@nexora.vn',
-      passwordHash: JwtHelper.hashPassword('Nexora@2026'),
-      fullName: 'Thu Ngân Chi Nhánh 1',
-      roles: ['CASHIER'],
-      storeId: 'store-01',
-    },
-  ];
 
   constructor(
     private readonly prisma: PrismaService,
@@ -47,63 +30,38 @@ export class AuthService {
     const { email, password } = loginDto;
     this.logger.log(`Attempting login for email: ${email}`);
 
-    let user: any = null;
-
-    // 1. Thử tìm trong database nếu DB sẵn sàng
-    try {
-      user = await this.prisma.user.findFirst({
-        where: { email },
-        include: {
-          tenant: true,
-          roles: {
-            include: {
-              role: true,
-            },
+    // 1. Tìm user trong PostgreSQL (không try/catch nuốt lỗi DB).
+    const dbUser = await this.prisma.user.findFirst({
+      where: { email },
+      include: {
+        tenant: true,
+        roles: {
+          include: {
+            role: true,
           },
         },
-      });
-    } catch {
-      this.logger.warn('DB query failed, falling back to mock authentication accounts.');
-    }
+      },
+    });
 
-    // 2. Fallback sang mock user nếu chưa có trong DB
-    if (!user) {
-      const mock = this.mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (mock && JwtHelper.comparePassword(password, mock.passwordHash)) {
-        user = {
-          id: mock.id,
-          tenantId: mock.tenantId,
-          email: mock.email,
-          fullName: mock.fullName,
-          roles: mock.roles,
-          storeId: mock.storeId,
-          tenant: {
-            id: mock.tenantId,
-            name: mock.tenantName,
-            slug: mock.tenantSlug,
-          },
-        };
-      }
-    } else {
-      // Validate password từ DB
-      const isMatch = JwtHelper.comparePassword(password, user.passwordHash);
-      if (!isMatch) {
-        throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
-      }
-      user = {
-        id: user.id,
-        tenantId: user.tenantId,
-        email: user.email,
-        fullName: user.fullName,
-        roles: user.roles?.map((r: any) => r.role?.code) || ['STAFF'],
-        storeId: user.storeId,
-        tenant: user.tenant,
-      };
-    }
-
-    if (!user) {
+    if (!dbUser) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
     }
+
+    // 2. Đối chiếu mật khẩu (hash PBKDF2, xem JwtHelper.hashPassword).
+    const isMatch = JwtHelper.comparePassword(password, dbUser.passwordHash);
+    if (!isMatch) {
+      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+    }
+
+    const user = {
+      id: dbUser.id,
+      tenantId: dbUser.tenantId,
+      email: dbUser.email,
+      fullName: dbUser.fullName,
+      roles: dbUser.roles?.map((r: any) => r.role?.code) || ['STAFF'],
+      storeId: dbUser.storeId,
+      tenant: dbUser.tenant,
+    };
 
     // 3. Sinh JWT Access Token & Refresh Token
     const jwtSecret =

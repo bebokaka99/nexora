@@ -7,6 +7,17 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const logger = new Logger('NEXORA-Bootstrap');
+
+  // TASK-009 fail-fast: dừng khởi động ngay khi thiếu DATABASE_URL,
+  // thay vì chạy backend bằng dữ liệu giả (fallback in-memory).
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      'NEXORA Backend không thể khởi động: thiếu biến môi trường DATABASE_URL. ' +
+        'Đặt DATABASE_URL trỏ tới PostgreSQL đã chạy migration 0001_init ' +
+        '(VD: postgresql://nexora:nexora@localhost:5432/nexora).',
+    );
+  }
+
   const app = await NestFactory.create(AppModule);
 
   const port = process.env.PORT || 4000;

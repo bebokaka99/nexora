@@ -33,6 +33,7 @@ model Tenant {
   users        User[]
   stores       Store[]
   warehouses   Warehouse[]
+  categories   Category[]
   products     Product[]
   orders       Order[]
   customers    Customer[]
@@ -216,6 +217,7 @@ model Category {
   slug      String    @db.VarChar(120)
   createdAt DateTime  @default(now()) @map("created_at")
 
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   products  Product[]
 
   @@unique([tenantId, slug])
