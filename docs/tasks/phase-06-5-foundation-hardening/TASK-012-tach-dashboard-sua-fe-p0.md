@@ -3,7 +3,7 @@
 - **Mã nhiệm vụ**: `TASK-012`
 - **Giai đoạn**: `Phase 06.5 — Foundation Hardening (Củng cố nền tảng)`
 - **Epic**: `EPIC-06-5-C`
-- **Trạng thái**: `TODO`
+- **Trạng thái**: `DONE` (hoàn thành ngày 16/11/2026, commit xem mục 5)
 - **Người thực hiện**: Frontend Engineer
 - **Độ ưu tiên**: Cao nhất (P0)
 
@@ -43,9 +43,33 @@
 6. Bước 6: Gỡ hiển thị tài khoản demo khỏi trang đăng nhập (phối hợp `TASK-011`); dọn các class chữ quá nhỏ (text 9–11px) về tối thiểu 12px ở các vị trí chính.
 
 ## 4. Tiêu chí nghiệm thu (Acceptance Criteria)
-- [ ] `npm run build` PASS sau nâng cấp Next; `npm audit` không còn báo CVE-2025-66478.
-- [ ] Class `animate-in` có hiệu ứng thật trên giao diện (không còn "chết").
-- [ ] File dashboard lớn nhất còn dưới 500 dòng; các tab dashboard vẫn hiển thị đủ dữ liệu như trước khi tách.
-- [ ] Bật dark mode: toàn bộ dashboard hiển thị đúng, không còn nền/chữ trắng trên trắng hay đen trên đen; kiểm chứng bằng tay trên `/dashboard`.
-- [ ] Trang đăng nhập không còn hiển thị tài khoản demo; accent emerald-600 `#059669` thống nhất trên dashboard.
-- [ ] Không thêm tính năng mới trong nhiệm vụ này — chỉ tách, sửa lỗi và chuẩn hóa.
+- [x] `npm run build` PASS sau nâng cấp Next; `npm audit` không còn báo CVE-2025-66478.
+  - Build PASS ngày 16/11/2026 với Next 15.1.9, 15 trang tĩnh (`/dashboard` First Load JS 149 kB).
+  - Next 15.1.0 → **15.1.9** (bản vá chính thức cho nhánh 15.1.x theo advisory GHSA-9qr9-h5gf-34mp: 15.0.5, 15.1.9, 15.2.6, 15.3.6, 15.4.8, 15.5.7, 16.0.7). React đã ở 19.3.1 (vượt bản vá 19.2.1). `package-lock.json` xác nhận `next: 15.1.9`.
+  - ⚠️ `npm audit` **không chạy được** trong môi trường này: registry chặn endpoint audit (`403 Forbidden - POST /-/npm/v1/security/audits/quick - policy_denied`, kiểm chứng ngày 16/11/2026). Việc hết CVE được xác minh bằng phiên bản đã cài (15.1.9 ∈ danh sách bản vá của vendor), không phải bằng `npm audit`. Cần chạy lại `npm audit` ở môi trường registry mở để xác nhận độc lập.
+- [x] Class `animate-in` có hiệu ứng thật trên giao diện (không còn "chết").
+  - `tailwindcss-animate@1.0.7` đã có trong `package.json` + `plugins: [animate]` trong `tailwind.config.ts` (xác minh lại ngày 16/11/2026 — đã xong từ commit 48b4153). CSS build `.next/static/css/*.css` chứa `@keyframes enter`, `tw-enter-opacity`, `animate-in`, `slide-in-from-top` (Modal/ToastBanner dùng `animate-in fade-in zoom-in-95` / `slide-in-from-top`).
+- [x] File dashboard lớn nhất còn dưới 500 dòng; các tab dashboard vẫn hiển thị đủ dữ liệu như trước khi tách.
+  - `page.tsx` 2.635 dòng → **251 dòng**; file lớn nhất mới là `PosCartPanel.tsx` **292 dòng** (kế tiếp `use-pos.ts` 260, `page.tsx` 251, `DashboardSidebar.tsx` 246). Toàn bộ 37 chỗ `text-[11px]` đã lên `text-xs` (grep còn 0).
+  - Tách bằng trích xuất cơ học từ file gốc (script `/tmp/split_dashboard.py`): JSX các tab giữ nguyên văn, chỉ đổi tên callback theo props; state dùng chung chuyển vào `use-dashboard-data` / `use-pos` / `use-stores`. Route vẫn `/dashboard` với 8 tab nội bộ, dữ liệu vẫn mock, mọi tương tác giữ nguyên (giỏ POS, modal, drawer, toast, chat gợi ý). Bỏ 2 đoạn code chết: state `showOrderDrawer` (khai báo nhưng không dùng) và import `MOCK_STORES` (không dùng).
+  - Ảnh chụp kiểm chứng: `screenshots/dashboard-split-light.png`, `dashboard-split-dark.png`, `dashboard-pos-v3.png` (tab Tổng quan đủ 4 thẻ chỉ số + biểu đồ kênh + sự kiện trực tiếp; tab POS đủ lưới sản phẩm + giỏ hàng).
+- [x] Bật dark mode: toàn bộ dashboard hiển thị đúng, không còn nền/chữ trắng trên trắng hay đen trên đen; kiểm chứng bằng tay trên `/dashboard`.
+  - Ảnh `dashboard-split-dark.png` (class `dark` trên `<html>`): card slate-900, chữ sáng đọc được, không vỡ. Tổng 380 class `dark:` trong các file dashboard mới.
+- [x] Trang đăng nhập không còn hiển thị tài khoản demo; accent emerald-600 `#059669` thống nhất trên dashboard.
+  - Đã xác minh lại ngày 16/11/2026: `app/(auth)/dang-nhap/page.tsx` không còn chuỗi demo/tài khoản mẫu (đã gỡ ở commit 48b4153); grep `purple` trong dashboard = 0; `dark:`/emerald đã thống nhất theo `design-system/nexora/MASTER.md`.
+- [x] Không thêm tính năng mới trong nhiệm vụ này — chỉ tách, sửa lỗi và chuẩn hóa.
+
+## 5. Kết quả thực hiện (16/11/2026, nhánh `feat/fe-vibe-and-docs-priority`, chỉ local — chưa push)
+- Commit trên nhánh `feat/fe-vibe-and-docs-priority`: "feat(fe): TASK-012 tách dashboard 2635 dòng + components/ui + nâng cấp Next 15.1.0 lên 15.1.9 (vá CVE-2025-66478)" (32 file, +3477/−2588, chỉ local — chưa push).
+
+**Nâng cấp Next**: `next` 15.1.0 → **15.1.9** (`package.json` + `package-lock.json`).
+
+**Design system mới — `frontend/components/ui/`** (dùng `cn()`, token emerald/slate, dark mode; tất cả đều đang được dashboard dùng thật):
+- `button.tsx` (Button: primary/secondary/outline/ghost/danger), `card.tsx` (Card), `input.tsx` (Input), `badge.tsx` (Badge: emerald/amber/rose/slate/indigo/sky/blue + className màu động từ mock), `modal.tsx` (Modal), `toast.tsx` (ToastBanner), `table.tsx` (Table/TableHead/TableBody/TableRow/TableHeaderCell/TableCell).
+
+**Cấu trúc dashboard mới — `frontend/components/dashboard/`** (route `/dashboard` giữ nguyên, 8 tab nội bộ):
+- `page.tsx` (251 dòng): route guard + ghép Sidebar/Header/tabs/modals.
+- `types.ts` (DashboardTab, PosCartItem, PosPaymentMethod), `use-dashboard-data.ts` (198 dòng: products/orders/channels/activities, toast, lọc đơn, chỉ số, chuyển kho, đồng bộ kênh), `use-pos.ts` (260 dòng: giỏ POS, chiết khấu, thanh toán, hóa đơn), `use-stores.ts` (133 dòng: cửa hàng/kho, điểm bán POS, thêm chi nhánh).
+- `DashboardSidebar.tsx` (246), `DashboardHeader.tsx` (100), `OverviewTab.tsx` (184), `PosTab.tsx` (226), `PosCartPanel.tsx` (292), `OrdersTab.tsx` (159), `InventoryTab.tsx` (122), `ChannelsTab.tsx` (92), `ProductsTab.tsx` (63), `ChatTab.tsx` (97), `StoresTab.tsx` (238), `OrderDetailModal.tsx` (94), `TransferModal.tsx` (115), `ReceiptModal.tsx` (108), `AddStoreModal.tsx` (167), `StatCard.tsx`, `ChannelBar.tsx`.
+
+**Kiểm chứng** (chạy thật ngày 16/11/2026): `npm run build` PASS (15 trang); `curl` 200 cho `/`, `/dashboard`, `/dang-nhap` trên port 3000; ảnh chụp headless Chrome đã xem bằng mắt (light/dark/POS). Hạn chế kiểm chứng: chưa click thử từng tương tác (thanh toán POS, chuyển kho, thêm chi nhánh) trên trình duyệt thật sau khi tách — chỉ kiểm chứng build + render + ảnh; nên click-through nhanh trước khi merge. `npm audit` không chạy được do policy registry (xem ghi chú ở tiêu chí đầu).
