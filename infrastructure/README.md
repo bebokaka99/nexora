@@ -36,8 +36,10 @@ frontend/.dockerignore  # Áp cho frontend build (context frontend/)
 .github/workflows/ci.yml
 ```
 
-⚠️ Các giá trị mặc định trong `docker-compose.yml` (mật khẩu Postgres,
-JWT secret mẫu) **CHỈ DÙNG CHO DEV**. Deploy thật phải đặt secret qua `.env`.
+⚠️ Các giá trị mặc định trong `docker-compose.yml` (mật khẩu Postgres)
+**CHỈ DÙNG CHO DEV**. Deploy thật phải đặt secret qua `.env`. Riêng
+`JWT_SECRET` / `JWT_REFRESH_SECRET` là **bắt buộc** — compose sẽ lỗi nếu
+thiếu trong `.env` (không còn default yếu).
 
 ### CI — GitHub Actions (`.github/workflows/ci.yml`)
 

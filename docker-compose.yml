@@ -9,7 +9,8 @@
 #   Postgres: localhost:5432 — Redis: localhost:6379
 #
 # ⚠️ Các giá trị mặc định bên dưới CHỈ DÙNG CHO DEV. Không dùng cho production:
-# đổi POSTGRES_PASSWORD / JWT_SECRET / JWT_REFRESH_SECRET qua file .env.
+# đổi POSTGRES_PASSWORD qua file .env. JWT_SECRET / JWT_REFRESH_SECRET là
+# BẮT BUỘC — compose sẽ lỗi nếu thiếu trong .env (không còn default yếu).
 # Dừng và xóa dữ liệu dev: docker compose down -v
 
 services:
@@ -49,8 +50,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-nexora}:${POSTGRES_PASSWORD:-nexora_dev_only}@postgres:5432/${POSTGRES_DB:-nexora}
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-change-me-dev-only-jwt-secret}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-dev-only-jwt-refresh-secret}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET chưa đặt trong .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET chưa đặt trong .env}
       PORT: 4000
       API_PREFIX: api/v1
       CORS_ORIGIN: http://localhost:3000
