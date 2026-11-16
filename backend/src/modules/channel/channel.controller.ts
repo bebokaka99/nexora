@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,6 +29,18 @@ import { CurrentTenant } from '../../common/decorators/current-user.decorator';
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
+  /**
+   * TASK-014: CurrentTenant có thể undefined khi request chưa đăng nhập
+   * (decorator trả request.user?.tenantId || header x-tenant-id).
+   * Không rơi về tenant demo — thiếu tenantId thì 401.
+   */
+  private requireTenantId(tenantId: string | undefined): string {
+    if (!tenantId) {
+      throw new UnauthorizedException('Thiếu thông tin doanh nghiệp: yêu cầu đăng nhập');
+    }
+    return tenantId;
+  }
+
   @Get()
   @ApiOperation({
     summary: 'Lấy danh sách các kênh bán hàng & sàn TMĐT đã kết nối',
@@ -35,14 +48,14 @@ export class ChannelController {
   })
   @ApiResponse({ status: 200, description: 'Lấy danh sách kênh thành công' })
   async findAll(@CurrentTenant() tenantId: string) {
-    return this.channelService.findAll(tenantId || 'tenant-demo-giadung');
+    return this.channelService.findAll(this.requireTenantId(tenantId));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Xem chi tiết kết nối gian hàng' })
   @ApiParam({ name: 'id', description: 'ID định danh kết nối' })
   async findById(@CurrentTenant() tenantId: string, @Param('id') id: string) {
-    return this.channelService.findById(tenantId || 'tenant-demo-giadung', id);
+    return this.channelService.findById(this.requireTenantId(tenantId), id);
   }
 
   @Post('connect')
@@ -53,7 +66,7 @@ export class ChannelController {
   })
   @ApiResponse({ status: 200, description: 'Kết nối gian hàng thành công' })
   async connect(@CurrentTenant() tenantId: string, @Body() dto: ConnectChannelDto) {
-    return this.channelService.connect(tenantId || 'tenant-demo-giadung', dto);
+    return this.channelService.connect(this.requireTenantId(tenantId), dto);
   }
 
   @Post(':id/sync')
@@ -65,7 +78,7 @@ export class ChannelController {
   })
   @ApiParam({ name: 'id', description: 'ID kết nối gian hàng' })
   async sync(@CurrentTenant() tenantId: string, @Param('id') id: string) {
-    return this.channelService.sync(tenantId || 'tenant-demo-giadung', id);
+    return this.channelService.sync(this.requireTenantId(tenantId), id);
   }
 
   @Get(':id/sync-status')
@@ -75,13 +88,13 @@ export class ChannelController {
   })
   @ApiParam({ name: 'id', description: 'ID kết nối gian hàng' })
   async getSyncStatus(@CurrentTenant() tenantId: string, @Param('id') id: string) {
-    return this.channelService.getSyncStatus(tenantId || 'tenant-demo-giadung', id);
+    return this.channelService.getSyncStatus(this.requireTenantId(tenantId), id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Hủy kết nối gian hàng' })
   @ApiParam({ name: 'id', description: 'ID kết nối gian hàng' })
   async disconnect(@CurrentTenant() tenantId: string, @Param('id') id: string) {
-    return this.channelService.disconnect(tenantId || 'tenant-demo-giadung', id);
+    return this.channelService.disconnect(this.requireTenantId(tenantId), id);
   }
 }
