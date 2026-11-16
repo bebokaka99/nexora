@@ -10,6 +10,7 @@ import { ProductModule } from './modules/product/product.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { OrderModule } from './modules/order/order.module';
 import { ChannelModule } from './modules/channel/channel.module';
+import { SyncModule } from './modules/sync/sync.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChannelModule } from './modules/channel/channel.module';
     InventoryModule,
     OrderModule,
     ChannelModule,
+    SyncModule,
   ],
 })
 export class AppModule {}

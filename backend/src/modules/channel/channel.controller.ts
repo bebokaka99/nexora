@@ -60,11 +60,22 @@ export class ChannelController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Kích hoạt đồng bộ đơn hàng & tồn kho tức thời',
-    description: 'Bắt đầu tác vụ kéo đơn mới và đẩy số lượng tồn kho khả dụng lên sàn.',
+    description:
+      'TASK-013: enqueue 2 job thật (sync-inventory + pull-orders) vào BullMQ queue "channel-sync", trả về job id. Không còn cập nhật lastSyncAt giả — mốc này chỉ đổi khi worker chạy xong thành công.',
   })
   @ApiParam({ name: 'id', description: 'ID kết nối gian hàng' })
   async sync(@CurrentTenant() tenantId: string, @Param('id') id: string) {
     return this.channelService.sync(tenantId || 'tenant-demo-giadung', id);
+  }
+
+  @Get(':id/sync-status')
+  @ApiOperation({
+    summary: 'Trạng thái đồng bộ gần nhất của gian hàng',
+    description: 'TASK-013: trả về SyncLog gần nhất (loại job, trạng thái, số thành công/thất bại, lỗi).',
+  })
+  @ApiParam({ name: 'id', description: 'ID kết nối gian hàng' })
+  async getSyncStatus(@CurrentTenant() tenantId: string, @Param('id') id: string) {
+    return this.channelService.getSyncStatus(tenantId || 'tenant-demo-giadung', id);
   }
 
   @Delete(':id')

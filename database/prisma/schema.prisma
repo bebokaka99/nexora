@@ -264,6 +264,7 @@ model ProductVariant {
   orderItems   OrderItem[]
   transferItems StockTransferItem[]
   inventoryTransactions InventoryTransaction[]
+  channelMappings ChannelProductMapping[]
 
   @@unique([tenantId, sku])
   @@index([tenantId, sku])
@@ -452,6 +453,19 @@ model Customer {
   @@map("customers")
 }
 
+enum SyncJobType {
+  SYNC_INVENTORY
+  PULL_ORDERS
+}
+
+enum SyncStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
 model ChannelConnection {
   id          String      @id @default(uuid())
   tenantId    String      @map("tenant_id") @db.VarChar(36)
@@ -459,12 +473,72 @@ model ChannelConnection {
   accountName String      @map("account_name") @db.VarChar(150)
   accountId   String      @map("account_id") @db.VarChar(100)
   status      String      @default("CONNECTED") @db.VarChar(30)
+  // TASK-013: token OAuth của sàn (lưu tạm plaintext — TODO: mã hóa at-rest
+  // trước khi production, xem SPIKE-shopee-tiktok.md §5). access_token của
+  // Shopee chỉ sống 4 giờ, TikTok 7 ngày; refresh_token dùng để tự refresh.
+  accessToken    String?   @map("access_token") @db.Text
+  refreshToken   String?   @map("refresh_token") @db.Text
+  tokenExpiresAt DateTime? @map("token_expires_at")
+  // TASK-013: chỉ cập nhật khi một job đồng bộ thật thành công (processor
+  // ghi), không còn cập nhật giả trong ChannelService.sync().
+  lastSyncAt     DateTime? @map("last_sync_at")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
   tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  syncLogs    SyncLog[]
+  productMappings ChannelProductMapping[]
 
   @@unique([tenantId, channelType, accountId])
   @@index([tenantId])
   @@map("channel_connections")
+}
+
+// TASK-013: nhật ký mỗi job đồng bộ sàn (BullMQ worker ghi).
+model SyncLog {
+  id            String      @id @default(uuid())
+  channelId     String      @map("channel_id") @db.VarChar(36)
+  tenantId      String      @map("tenant_id") @db.VarChar(36)
+  jobType       SyncJobType @map("job_type")
+  status        SyncStatus  @default(PENDING)
+  successCount  Int         @default(0) @map("success_count")
+  failureCount  Int         @default(0) @map("failure_count")
+  errorMessage  String?     @map("error_message") @db.Text
+  startedAt     DateTime?   @map("started_at")
+  finishedAt    DateTime?   @map("finished_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  channel       ChannelConnection @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("sync_logs")
+}
+
+// TASK-013: map variant NEXORA ↔ sản phẩm trên sàn. Không có map thì worker
+// không biết đẩy tồn của variant nào lên item nào — job đếm là "chưa map"
+// thay vì đoán. Map được tạo khi seller liên kết sản phẩm (Phase 07) hoặc
+// nhập tay; seed không tạo map giả.
+//   Shopee: external_item_id = item_id, external_model_id = model_id (0 nếu
+//   sản phẩm không có phân loại).
+//   TikTok: external_item_id = product_id, external_sku_id = sku id,
+//   external_warehouse_id = warehouse_id trên TikTok Shop (tồn theo kho).
+model ChannelProductMapping {
+  id                  String   @id @default(uuid())
+  channelId           String   @map("channel_id") @db.VarChar(36)
+  tenantId            String   @map("tenant_id") @db.VarChar(36)
+  variantId           String   @map("variant_id") @db.VarChar(36)
+  externalItemId      String   @map("external_item_id") @db.VarChar(100)
+  externalModelId     String?  @map("external_model_id") @db.VarChar(100)
+  externalSkuId       String?  @map("external_sku_id") @db.VarChar(100)
+  externalWarehouseId String?  @map("external_warehouse_id") @db.VarChar(100)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  channel             ChannelConnection @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  variant             ProductVariant    @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, variantId])
+  @@index([tenantId, variantId])
+  @@map("channel_product_mappings")
 }
