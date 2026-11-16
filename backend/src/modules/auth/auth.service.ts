@@ -7,6 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import { LoginDto, RefreshTokenDto } from './dto/auth.dto';
 import { JwtHelper } from '../../common/utils/jwt.helper';
+import {
+  getJwtSecret,
+  getJwtRefreshSecret,
+} from '../../common/utils/jwt-secrets';
 
 /**
  * AuthService — TASK-009: đọc user trực tiếp từ PostgreSQL qua Prisma.
@@ -14,6 +18,9 @@ import { JwtHelper } from '../../common/utils/jwt.helper';
  * in-memory: nếu DB chưa migrate / chưa seed, đăng nhập trả 401;
  * nếu DB không kết nối được, Prisma ném lỗi và request fail rõ ràng
  * thay vì lặng lẽ đăng nhập bằng tài khoản giả.
+ * TASK-011: secret JWT hardcode cũng đã bị xóa. Thiếu JWT_SECRET /
+ * JWT_REFRESH_SECRET thì fail-fast (xem common/utils/jwt-secrets.ts
+ * và main.ts), không lặng lẽ ký token bằng secret ai cũng biết.
  * Tài khoản admin seed: xem database/prisma/seed.ts (admin@nexora.vn,
  * mật khẩu từ biến môi trường SEED_ADMIN_PASSWORD).
  */
@@ -64,12 +71,9 @@ export class AuthService {
     };
 
     // 3. Sinh JWT Access Token & Refresh Token
-    const jwtSecret =
-      this.configService.get<string>('JWT_SECRET') ||
-      'nexora_super_secret_jwt_key_2026_modular_monolith';
-    const jwtRefreshSecret =
-      this.configService.get<string>('JWT_REFRESH_SECRET') ||
-      'nexora_super_secret_refresh_jwt_key_2026';
+    // TASK-011: fail-fast khi thiếu secret — không fallback secret hardcode.
+    const jwtSecret = getJwtSecret(this.configService);
+    const jwtRefreshSecret = getJwtRefreshSecret(this.configService);
 
     const tokenPayload = {
       sub: user.id,
@@ -102,12 +106,9 @@ export class AuthService {
   }
 
   async refreshToken(dto: RefreshTokenDto) {
-    const jwtSecret =
-      this.configService.get<string>('JWT_SECRET') ||
-      'nexora_super_secret_jwt_key_2026_modular_monolith';
-    const jwtRefreshSecret =
-      this.configService.get<string>('JWT_REFRESH_SECRET') ||
-      'nexora_super_secret_refresh_jwt_key_2026';
+    // TASK-011: fail-fast khi thiếu secret — không fallback secret hardcode.
+    const jwtSecret = getJwtSecret(this.configService);
+    const jwtRefreshSecret = getJwtRefreshSecret(this.configService);
 
     try {
       const payload = JwtHelper.verify(dto.refreshToken, jwtRefreshSecret);

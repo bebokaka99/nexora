@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '../decorators/roles.decorator';
 import { JwtHelper } from '../utils/jwt.helper';
+import { getJwtSecret } from '../utils/jwt-secrets';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -34,9 +35,8 @@ export class AuthGuard implements CanActivate {
     }
 
     const token = authHeader.split(' ')[1];
-    const secret =
-      this.configService.get<string>('JWT_SECRET') ||
-      'nexora_super_secret_jwt_key_2026_modular_monolith';
+    // TASK-011: fail-fast khi thiếu JWT_SECRET — không fallback secret hardcode.
+    const secret = getJwtSecret(this.configService);
 
     try {
       const payload = JwtHelper.verify(token, secret);

@@ -7,7 +7,7 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Email không được để trống' })
   email: string;
 
-  @ApiProperty({ example: 'Nexora@2026', description: 'Mật khẩu' })
+  @ApiProperty({ example: 'MatKhauManh123!', description: 'Mật khẩu' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(6, { message: 'Mật khẩu tối thiểu 6 ký tự' })
   password: string;

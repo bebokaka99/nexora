@@ -18,6 +18,27 @@ async function bootstrap() {
     );
   }
 
+  // TASK-011 fail-fast: dừng khởi động ngay khi thiếu JWT secret,
+  // thay vì lặng lẽ ký/xác thực token bằng secret hardcode mà ai đọc
+  // code cũng biết. Đặt secret bằng chuỗi ngẫu nhiên dài
+  // (VD: openssl rand -base64 48), xem .env.example.
+  // Lưu ý: kiểm tra này đọc process.env trực tiếp, giống mẫu TASK-009
+  // với DATABASE_URL — khi chạy qua docker-compose, secret được cấp qua
+  // environment của service backend; file .env chỉ được ConfigModule
+  // nạp sau khi tạo Nest app nên không thay thế được biến môi trường ở đây.
+  if (!process.env.JWT_SECRET) {
+    throw new Error(
+      'NEXORA Backend không thể khởi động: thiếu biến môi trường JWT_SECRET. ' +
+        'Đặt JWT_SECRET (chuỗi ngẫu nhiên dài, VD: openssl rand -base64 48) rồi khởi động lại.',
+    );
+  }
+  if (!process.env.JWT_REFRESH_SECRET) {
+    throw new Error(
+      'NEXORA Backend không thể khởi động: thiếu biến môi trường JWT_REFRESH_SECRET. ' +
+        'Đặt JWT_REFRESH_SECRET (chuỗi ngẫu nhiên dài, khác JWT_SECRET) rồi khởi động lại.',
+    );
+  }
+
   const app = await NestFactory.create(AppModule);
 
   const port = process.env.PORT || 4000;

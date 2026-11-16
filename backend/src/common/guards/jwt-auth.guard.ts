@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { JwtHelper } from '../utils/jwt.helper';
+import { getJwtSecret } from '../utils/jwt-secrets';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -21,10 +22,8 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const secret = this.configService.get<string>(
-        'JWT_SECRET',
-        'nexora_super_secret_jwt_key_2026_modular_monolith',
-      );
+      // TASK-011: fail-fast khi thiếu JWT_SECRET — không fallback secret hardcode.
+      const secret = getJwtSecret(this.configService);
       const payload = JwtHelper.verify(token, secret);
 
       // Gắn thông tin người dùng và ngữ cảnh doanh nghiệp vào request

@@ -11,7 +11,7 @@ export class LoginDto {
   email: string;
 
   @ApiProperty({
-    example: 'Nexora@2026',
+    example: 'MatKhauManh123!',
     description: 'Mật khẩu đăng nhập (tối thiểu 6 ký tự)',
   })
   @IsString()

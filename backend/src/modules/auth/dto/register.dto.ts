@@ -45,7 +45,7 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({
-    example: 'Nexora@2026',
+    example: 'MatKhauManh123!',
     description: 'Mật khẩu bảo vệ tài khoản (tối thiểu 8 ký tự)',
   })
   @IsString()
