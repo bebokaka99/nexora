@@ -348,7 +348,16 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* 1. Chủ Shop Online */}
-            <div className="p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300">
+            <div className="p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+              <div className="relative -mx-7 -mt-7 mb-5 h-40 overflow-hidden">
+                <Image
+                  src="/images/packing-parcel.jpg"
+                  alt="Đóng gói đơn hàng cẩn thận chuẩn bị giao cho khách mua online"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center justify-center font-bold text-lg mb-5">
                 <Users className="w-6 h-6" />
               </div>
@@ -376,9 +385,18 @@ export default function HomePage() {
 
             {/* 2. Cửa hàng bán lẻ */}
             <div className="p-7 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-500 shadow-xl relative hover:-translate-y-1 transition-all duration-300">
-              <span className="absolute -top-3 right-6 text-[10px] uppercase font-extrabold px-3 py-1 rounded-full bg-emerald-600 text-white shadow-sm">
+              <span className="absolute -top-3 right-6 z-10 text-[10px] uppercase font-extrabold px-3 py-1 rounded-full bg-emerald-600 text-white shadow-sm">
                 Được Lựa Chọn Nhiều Nhất
               </span>
+              <div className="relative -mx-7 -mt-7 mb-5 h-40 overflow-hidden rounded-t-2xl">
+                <Image
+                  src="/images/pos-counter.jpg"
+                  alt="Quầy thu ngân POS tại cửa hàng bán lẻ với máy tính tiền và hàng hóa"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center justify-center font-bold text-lg mb-5">
                 <Store className="w-6 h-6" />
               </div>
@@ -405,7 +423,16 @@ export default function HomePage() {
             </div>
 
             {/* 3. Chuỗi cửa hàng & Doanh nghiệp */}
-            <div className="p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300">
+            <div className="p-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+              <div className="relative -mx-7 -mt-7 mb-5 h-40 overflow-hidden">
+                <Image
+                  src="/images/store-shelf.jpg"
+                  alt="Kệ hàng đầy đủ sản phẩm trong cửa hàng của chuỗi bán lẻ"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center justify-center font-bold text-lg mb-5">
                 <Building2 className="w-6 h-6" />
               </div>
