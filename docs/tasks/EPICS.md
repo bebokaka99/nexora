@@ -35,6 +35,14 @@ Tài liệu này liệt kê danh sách các Epic (khối tính năng lớn) phâ
 - `EPIC-06-B`: Tích hợp TikTok Shop Open API.
 - `EPIC-06-C`: Hàng đợi đồng bộ tồn kho hai chiều với BullMQ và Redis.
 
+## Giai đoạn 06.5. Củng cố nền tảng (Foundation Hardening)
+- `EPIC-06-5-A`: Migration Prisma, PostgreSQL thật và hạ tầng Docker/CI.
+- `EPIC-06-5-B`: Bảo mật — gỡ tài khoản demo hardcode khỏi auth và giao diện.
+- `EPIC-06-5-C`: Frontend P0 — tách dashboard, dark mode, animation, nâng cấp Next, thống nhất accent.
+- `EPIC-06-5-D`: Hoàn thiện Phase 06 — tích hợp sàn thật (spike Shopee/TikTok Shop API + BullMQ/Redis worker).
+
+> Cập nhật ngày 16/11/2026: Phase 06.5 được chèn giữa Phase 06 và Phase 07 theo quyết định đổi ưu tiên "củng cố nền trước, thêm tính năng sau" (căn cứ kiểm chứng repo ngày 16/11/2026, commit `08b9602`). `EPIC-06-A/B/C` của Phase 06 giữ nguyên; phần tích hợp sàn thật của các epic này được hoàn thiện trong Phase 06.5 qua `TASK-013`.
+
 ## Giai đoạn 07. Hộp thư hội thoại tập trung (Unified Inbox)
 - `EPIC-07-A`: Tích hợp Meta Graph API (Facebook Fanpage & Messenger).
 - `EPIC-07-B`: Hệ thống WebSockets thời gian thực với Socket.IO.

@@ -11,8 +11,6 @@ import {
   ArrowRight,
   AlertCircle,
   Loader2,
-  KeyRound,
-  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -65,12 +63,6 @@ function LoginFormContent() {
     }
   };
 
-  const handleFillDemoCredentials = () => {
-    setEmail('admin@nexora.vn');
-    setPassword('Nexora@2026');
-    setErrorMessage(null);
-  };
-
   return (
     <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl text-slate-900 dark:text-white transition-colors duration-200">
       {/* Card Header */}
@@ -81,27 +73,6 @@ function LoginFormContent() {
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Nhập thông tin tài khoản doanh nghiệp của bạn để tiếp tục
         </p>
-      </div>
-
-      {/* Quick Demo Fill Helper Banner */}
-      <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5">
-          <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
-            <KeyRound className="w-3.5 h-3.5" />
-          </div>
-          <div className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
-            <div className="font-bold text-emerald-700 dark:text-emerald-300">Tài khoản quản trị mẫu:</div>
-            <div className="text-slate-600 dark:text-slate-400">admin@nexora.vn • Nexora@2026</div>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleFillDemoCredentials}
-          className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-100 dark:bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-500/30 transition-all active:scale-95"
-        >
-          <Sparkles className="w-3 h-3" />
-          <span>Điền nhanh</span>
-        </button>
       </div>
 
       {/* Error Message Box */}

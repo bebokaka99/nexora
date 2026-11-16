@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Store,
   Boxes,
@@ -13,7 +14,6 @@ import {
   CheckCircle2,
   ArrowRight,
   RefreshCw,
-  Barcode,
   ChevronDown,
   TrendingUp,
   AlertTriangle,
@@ -146,78 +146,54 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* CỘT PHẢI: Hình ảnh minh họa trực quan sinh động theo tông Xanh lá & Trắng */}
+            {/* CỘT PHẢI: Ảnh thật — chủ shop sau quầy + thẻ nổi kiểu Pancake */}
             <div className="lg:col-span-6">
-              <div className="relative mx-auto rounded-3xl p-3 bg-gradient-to-b from-emerald-100 via-emerald-50 to-slate-200 dark:from-slate-800 dark:to-slate-900 shadow-2xl ring-1 ring-emerald-500/20">
-                <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 text-white p-5 sm:p-6 space-y-5">
-                  {/* Mockup Top Status Bar */}
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-800 text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="font-bold text-emerald-400">Bán Lẻ Hợp Nhất Đang Vận Hành</span>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">
-                      2 Cửa Hàng • 3 Kênh Sàn
+              <div className="relative mx-auto max-w-xl">
+                <div className="relative overflow-hidden rounded-3xl bg-emerald-100 dark:bg-emerald-950 shadow-2xl ring-1 ring-emerald-500/20 aspect-[4/3]">
+                  <Image
+                    src="/images/hero-shop.jpg"
+                    alt="Chủ cửa hàng đồ gia dụng đang tư vấn và bán hàng sau quầy thu ngân"
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  {/* Thẻ nổi: đơn mới từ Shopee */}
+                  <div className="absolute left-3 top-3 sm:left-4 sm:top-4 flex items-center gap-2 rounded-xl bg-white/95 dark:bg-slate-900/95 px-3 py-2 shadow-lg ring-1 ring-slate-200/60 dark:ring-slate-700 backdrop-blur">
+                    <span className="relative flex h-2.5 w-2.5 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     </span>
-                  </div>
-
-                  {/* Feature Highlight 1: POS Screen Card */}
-                  <div className="p-4 rounded-xl bg-slate-800/90 border border-slate-700 hover:border-emerald-500/50 transition-all duration-300 group">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
-                          <Barcode className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-white">Quầy Thu Ngân Bán Lẻ (POS)</div>
-                          <div className="text-[10px] text-slate-400">Chi nhánh 1 — Quận 1</div>
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        Quét 0.2s • In Bill K80
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs bg-slate-950/60 p-2.5 rounded-lg font-mono">
-                      <span className="text-slate-300">Nồi chiên không dầu 5.5L (x1)</span>
-                      <span className="text-emerald-400 font-bold">1.450.000 ₫</span>
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Đơn mới từ Shopee</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">#ORD-SP-9821 • đã trừ kho Q.1</div>
                     </div>
                   </div>
-
-                  {/* Feature Highlight 2: Omnichannel Sync Row */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                      <div className="text-[11px] text-slate-400 mb-1 flex items-center justify-between">
-                        <span>Đơn Shopee mới</span>
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                      </div>
-                      <div className="font-bold text-sm text-white">#ORD-SP-9821</div>
-                      <div className="text-[10px] text-emerald-400 mt-1">Đã tự động trừ kho Q.1</div>
+                  {/* Thẻ nổi: chat khách hỏi tồn kho */}
+                  <div className="absolute bottom-16 left-3 sm:bottom-20 sm:left-4 flex items-center gap-2.5 rounded-xl bg-white/95 dark:bg-slate-900/95 px-3 py-2 shadow-lg ring-1 ring-slate-200/60 dark:ring-slate-700 backdrop-blur">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                      <MessageSquare className="h-4 w-4" />
                     </div>
-
-                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                      <div className="text-[11px] text-slate-400 mb-1 flex items-center justify-between">
-                        <span>Đơn TikTok Shop</span>
-                        <span className="w-2 h-2 rounded-full bg-sky-400" />
-                      </div>
-                      <div className="font-bold text-sm text-white">#ORD-TT-5510</div>
-                      <div className="text-[10px] text-emerald-400 mt-1">Đang chờ đóng gói</div>
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">Khách hỏi tồn kho qua Messenger</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">Nồi chiên Lock&amp;Lock 5.2L còn 12 cái</div>
                     </div>
                   </div>
-
-                  {/* Feature Highlight 3: VietQR Dynamic Payment Badge */}
-                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/80 to-slate-800 border border-emerald-800/60 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-600 text-white shadow-sm">
-                        <QrCode className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">Thanh Toán VietQR Tự Động Khớp Tiền</div>
-                        <div className="text-[10px] text-emerald-300">Khách quét mã, hóa đơn hoàn tất tức thì</div>
-                      </div>
+                  {/* Thẻ nổi: VietQR đã khớp tiền */}
+                  <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 flex items-center gap-2.5 rounded-xl bg-white/95 dark:bg-slate-900/95 px-3 py-2 shadow-lg ring-1 ring-slate-200/60 dark:ring-slate-700 backdrop-blur">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                      <QrCode className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-emerald-400">100% Khớp Lệnh</span>
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">VietQR đã khớp 760.000 ₫</div>
+                      <div className="text-[11px] text-emerald-600 dark:text-emerald-400">Thanh toán thành công • POS-CN1-0422</div>
+                    </div>
                   </div>
                 </div>
+                {/* Chú thích nhỏ dưới ảnh */}
+                <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+                  Chủ shop bán tại quầy, chốt đơn trên sàn — tất cả đồng bộ trong một hệ thống NEXORA.
+                </p>
               </div>
             </div>
           </div>

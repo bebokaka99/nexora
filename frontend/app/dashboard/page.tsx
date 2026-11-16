@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
@@ -325,7 +326,7 @@ export default function DashboardDemoPage() {
       phone: posCustomerPhone || "0988 777 666",
       channel: isFirst ? "POS_STORE_1" : "POS_STORE_2",
       channelLabel: storeLabel,
-      channelBadgeColor: "bg-purple-100 text-purple-800 border-purple-300",
+      channelBadgeColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700",
       items: posCart.map((item) => ({
         name: item.product.name,
         sku: item.product.sku,
@@ -336,7 +337,7 @@ export default function DashboardDemoPage() {
       discountAmount: cartDiscountAmount,
       status: "COMPLETED",
       statusLabel: "Hoàn tất tại quầy",
-      statusColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      statusColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800",
       paymentStatus: "PAID",
       paymentMethod:
         posPaymentMethod === "CASH"
@@ -362,7 +363,7 @@ export default function DashboardDemoPage() {
         title: `Thanh toán thành công ${newOrderId}`,
         description: `Đã thu ${cartTotalAmount.toLocaleString("vi-VN")} ₫ bằng ${newOrder.paymentMethod}. Trừ ${posCart.reduce((s, i) => s + i.qty, 0)} sản phẩm tồn kho.`,
         tag: activeStoreObj ? activeStoreObj.code : (isFirst ? "POS CN1" : "POS CN2"),
-        tagColor: "bg-purple-100 text-purple-800",
+        tagColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200",
       },
       ...prev,
     ]);
@@ -457,7 +458,7 @@ export default function DashboardDemoPage() {
           transferFrom === "store1" ? "Kho Q.1 -> Kho Bình Thạnh" : "Kho Bình Thạnh -> Kho Q.1"
         }.`,
         tag: "Chuyển kho",
-        tagColor: "bg-blue-100 text-blue-800",
+        tagColor: "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200",
       },
       ...prev,
     ]);
@@ -487,7 +488,7 @@ export default function DashboardDemoPage() {
           title: "Đồng bộ tồn kho đa sàn hoàn tất",
           description: "Đã cập nhật số lượng tồn khả dụng của toàn bộ danh mục sản phẩm lên Shopee và TikTok Shop.",
           tag: "Sync Engine",
-          tagColor: "bg-emerald-100 text-emerald-800",
+          tagColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200",
         },
         ...prev,
       ]);
@@ -551,7 +552,7 @@ export default function DashboardDemoPage() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans overflow-hidden">
       {/* =======================================================================
           SIDEBAR
       ======================================================================= */}
@@ -559,13 +560,15 @@ export default function DashboardDemoPage() {
         {/* Sidebar Brand Header */}
         <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between">
           <Link href="/" className="flex items-center group">
-            <img
+            <Image
               src="/logo.png"
               alt="NEXORA"
+              width={1024}
+              height={572}
               className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
             />
           </Link>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
             PRO
           </span>
         </div>
@@ -580,7 +583,7 @@ export default function DashboardDemoPage() {
               <div className="text-xs font-bold text-white truncate" title={tenant?.name || "Gia Dụng Hiện Đại"}>
                 {tenant?.name || "Gia Dụng Hiện Đại"}
               </div>
-              <div className="text-[10px] text-slate-400 truncate">
+              <div className="text-xs text-slate-400 truncate">
                 {tenant?.slug ? `@${tenant.slug}` : "2 Cửa Hàng • 3 Kênh Sàn"}
               </div>
             </div>
@@ -608,15 +611,15 @@ export default function DashboardDemoPage() {
             onClick={() => setActiveTab("pos")}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === "pos"
-                ? "bg-purple-600 text-white shadow-sm shadow-purple-500/20 font-semibold"
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/20 font-semibold"
                 : "text-slate-400 hover:text-white hover:bg-slate-900"
             }`}
           >
             <div className="flex items-center gap-3">
-              <Barcode className="w-4 h-4 shrink-0 text-purple-400" />
+              <Barcode className="w-4 h-4 shrink-0 text-emerald-400" />
               <span>2. Quầy Bán Lẻ (POS)</span>
             </div>
-            <span className="px-1.5 py-0.5 rounded-full bg-purple-500/30 text-purple-300 text-[9px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-[11px] font-bold">
               2 Quầy
             </span>
           </button>
@@ -634,7 +637,7 @@ export default function DashboardDemoPage() {
               <ShoppingBag className="w-4 h-4 shrink-0" />
               <span>3. Đơn Hàng Đa Kênh</span>
             </div>
-            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-xs font-bold">
               {orders.length}
             </span>
           </button>
@@ -653,7 +656,7 @@ export default function DashboardDemoPage() {
               <span>4. Tồn Kho Đa Điểm</span>
             </div>
             {lowStockCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold">
                 {lowStockCount} Sắp hết
               </span>
             )}
@@ -672,7 +675,7 @@ export default function DashboardDemoPage() {
             <span>5. Kết Nối Kênh Sàn</span>
           </button>
 
-          <div className="pt-3 pb-1 px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="pt-3 pb-1 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Phân Hệ Bổ Trợ
           </div>
 
@@ -702,7 +705,7 @@ export default function DashboardDemoPage() {
               <MessageSquare className="w-4 h-4 shrink-0" />
               <span>Hộp Thư Hội Thoại</span>
             </div>
-            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold animate-pulse">
+            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-bold animate-pulse">
               18
             </span>
           </button>
@@ -720,7 +723,7 @@ export default function DashboardDemoPage() {
               <Store className="w-4 h-4 shrink-0" />
               <span>Hệ Thống Cửa Hàng</span>
             </div>
-            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">
               {stores.length || 2}
             </span>
           </button>
@@ -729,7 +732,7 @@ export default function DashboardDemoPage() {
         {/* Sidebar Footer User Info & Logout */}
         <div className="p-3 border-t border-slate-800 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center font-bold text-xs text-white shadow-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-blue-600 flex items-center justify-center font-bold text-xs text-white shadow-sm shrink-0">
               {user?.fullName
                 ? user.fullName
                     .split(" ")
@@ -743,7 +746,7 @@ export default function DashboardDemoPage() {
               <div className="text-xs font-bold text-white truncate" title={user?.fullName || "Quản Trị Viên"}>
                 {user?.fullName || "Quản Trị Viên"}
               </div>
-              <div className="text-[10px] text-emerald-400 flex items-center gap-1">
+              <div className="text-xs text-emerald-400 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <span className="truncate">{user?.role || "ADMIN"} • Trực Tuyến</span>
               </div>
@@ -764,9 +767,9 @@ export default function DashboardDemoPage() {
       ======================================================================= */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <h1 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
               {activeTab === "overview" && "Dashboard Tổng Quan Hoạt Động Kinh Doanh"}
               {activeTab === "pos" && "Quầy Thu Ngân Bán Lẻ Tại Cửa Hàng (POS Terminal)"}
               {activeTab === "orders" && "Quản Lý Đơn Hàng Đa Kênh Hợp Nhất"}
@@ -785,8 +788,8 @@ export default function DashboardDemoPage() {
               onClick={() => setActiveTab("pos")}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all ${
                 activeTab === "pos"
-                  ? "bg-purple-700 text-white"
-                  : "bg-purple-600 hover:bg-purple-700 text-white"
+                  ? "bg-emerald-700 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
               }`}
             >
               <Barcode className="w-3.5 h-3.5" />
@@ -797,7 +800,7 @@ export default function DashboardDemoPage() {
             <button
               onClick={handleTriggerChannelSync}
               disabled={isSyncingChannels}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isSyncingChannels ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Đồng Bộ Sàn</span>
@@ -808,25 +811,25 @@ export default function DashboardDemoPage() {
 
             {/* Notification Bell */}
             <div className="relative">
-              <button className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 relative">
+              <button className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 relative">
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500" />
               </button>
             </div>
 
             {/* Header User Badge & Logout */}
-            <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+            <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-700">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-bold text-slate-800 leading-tight">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
                   {user?.fullName || "Nguyễn Văn Quản Trị"}
                 </span>
-                <span className="text-[10px] text-slate-500 leading-tight">
+                <span className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
                   {tenant?.name || "Gia Dụng Hiện Đại"}
                 </span>
               </div>
               <button
                 onClick={logout}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/50 border border-slate-200 dark:border-slate-700 transition-colors"
                 title="Đăng xuất khỏi Workspace"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -850,7 +853,7 @@ export default function DashboardDemoPage() {
         )}
 
         {/* Scrollable Content Container */}
-        <main className="flex-1 overflow-y-auto p-6 bg-slate-100">
+        <main className="flex-1 overflow-y-auto p-6 bg-slate-100 dark:bg-slate-800">
           {/* ===================================================================
               TAB 1: OVERVIEW DASHBOARD (MÀN HÌNH 1)
           =================================================================== */}
@@ -859,69 +862,69 @@ export default function DashboardDemoPage() {
               {/* Metric Cards Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {/* Metric 1: Doanh thu hôm nay */}
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow transition-shadow">
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
                     <span>Tổng Doanh Thu Hôm Nay</span>
-                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">
                       <TrendingUp className="w-3 h-3 mr-0.5" /> +18.4%
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                     {totalRevenue.toLocaleString("vi-VN")} ₫
                   </div>
-                  <div className="mt-2 text-[11px] text-slate-500">
-                    Hôm qua: <span className="font-semibold text-slate-700">40.750.000 ₫</span>
+                  <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                    Hôm qua: <span className="font-semibold text-slate-700 dark:text-slate-300">40.750.000 ₫</span>
                   </div>
                 </div>
 
                 {/* Metric 2: Đơn hàng mới */}
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow transition-shadow">
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
                     <span>Số Đơn Hàng Mới</span>
-                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">
                       Đa kênh
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                     {totalOrdersCount} Đơn
                   </div>
-                  <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
+                  <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                     <span>Shopee: <strong className="text-amber-600">64</strong></span>
                     <span>•</span>
                     <span>TikTok: <strong className="text-sky-600">42</strong></span>
                     <span>•</span>
-                    <span>POS: <strong className="text-purple-600">20</strong></span>
+                    <span>POS: <strong className="text-emerald-600">20</strong></span>
                   </div>
                 </div>
 
                 {/* Metric 3: Tồn kho khả dụng */}
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow transition-shadow">
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
                     <span>Tồn Khả Dụng Toàn Hệ Thống</span>
-                    <span className="text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                       2 Kho
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                     {totalAvailableStock} Cái
                   </div>
-                  <div className="mt-2 text-[11px] text-slate-500">
+                  <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                     Đang giữ cho đơn online: <span className="font-semibold text-emerald-600">28 cái</span>
                   </div>
                 </div>
 
                 {/* Metric 4: Cảnh báo sắp hết */}
-                <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow transition-shadow">
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-shadow">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
                     <span>Cảnh Báo Sắp Hết Hàng</span>
-                    <span className="flex items-center text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
+                    <span className="flex items-center text-rose-600 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded">
                       <AlertTriangle className="w-3 h-3 mr-0.5" /> Chú ý
                     </span>
                   </div>
                   <div className="text-2xl font-black text-rose-600 tracking-tight">
                     {lowStockCount} Mặt Hàng
                   </div>
-                  <div className="mt-2 text-[11px] text-slate-500">
+                  <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                     Tồn khả dụng &le; 5 chiếc tại các kho
                   </div>
                 </div>
@@ -930,17 +933,17 @@ export default function DashboardDemoPage() {
               {/* Chart & Live Stream Row */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* 2-Column: Doanh thu theo kênh */}
-                <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="lg:col-span-2 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                         Phân Bổ Doanh Thu Theo Kênh Bán Hàng
                       </h2>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         Tỷ trọng doanh số từ 2 cửa hàng vật lý và các sàn TMĐT
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-1 rounded-lg">
                       Hôm nay
                     </span>
                   </div>
@@ -950,13 +953,13 @@ export default function DashboardDemoPage() {
                     {/* Shopee */}
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-slate-700 flex items-center gap-2">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                           Shopee Mall (64 đơn)
                         </span>
-                        <span className="font-bold text-slate-900">24.900.000 ₫ (51.6%)</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">24.900.000 ₫ (51.6%)</span>
                       </div>
-                      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: "51.6%" }} />
                       </div>
                     </div>
@@ -964,13 +967,13 @@ export default function DashboardDemoPage() {
                     {/* TikTok Shop */}
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-slate-700 flex items-center gap-2">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
                           TikTok Shop Live (42 đơn)
                         </span>
-                        <span className="font-bold text-slate-900">12.350.000 ₫ (25.6%)</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">12.350.000 ₫ (25.6%)</span>
                       </div>
-                      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-sky-500 rounded-full transition-all" style={{ width: "25.6%" }} />
                       </div>
                     </div>
@@ -978,33 +981,33 @@ export default function DashboardDemoPage() {
                     {/* POS CN1 */}
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-slate-700 flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-purple-600" />
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                           POS Chi Nhánh 1 — Quận 1 (12 đơn)
                         </span>
-                        <span className="font-bold text-slate-900">7.200.000 ₫ (14.9%)</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">7.200.000 ₫ (14.9%)</span>
                       </div>
-                      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-purple-600 rounded-full transition-all" style={{ width: "14.9%" }} />
+                      <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-600 rounded-full transition-all" style={{ width: "14.9%" }} />
                       </div>
                     </div>
 
                     {/* POS CN2 */}
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-slate-700 flex items-center gap-2">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
                           POS Chi Nhánh 2 — Bình Thạnh (8 đơn)
                         </span>
-                        <span className="font-bold text-slate-900">3.800.000 ₫ (7.9%)</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">3.800.000 ₫ (7.9%)</span>
                       </div>
-                      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: "7.9%" }} />
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                     <span>Đối soát chi phí sàn: Shopee (-11.5%), TikTok Shop (-9.8%)</span>
                     <button
                       onClick={() => setActiveTab("channels")}
@@ -1016,26 +1019,26 @@ export default function DashboardDemoPage() {
                 </div>
 
                 {/* 1-Column: Live Stream Activity */}
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col">
+                <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Sự Kiện Trực Tiếp
                     </h2>
-                    <span className="text-[10px] text-slate-400">Thời gian thực</span>
+                    <span className="text-xs text-slate-400">Thời gian thực</span>
                   </div>
 
                   <div className="flex-1 overflow-y-auto space-y-3">
                     {activities.map((act) => (
-                      <div key={act.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                      <div key={act.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-xs">
                         <div className="flex items-center justify-between mb-1">
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${act.tagColor}`}>
+                          <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${act.tagColor}`}>
                             {act.tag}
                           </span>
-                          <span className="text-[10px] text-slate-400">{act.time}</span>
+                          <span className="text-xs text-slate-400">{act.time}</span>
                         </div>
-                        <div className="font-bold text-slate-900 text-xs">{act.title}</div>
-                        <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{act.description}</p>
+                        <div className="font-bold text-slate-900 dark:text-slate-100 text-xs">{act.title}</div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">{act.description}</p>
                       </div>
                     ))}
                   </div>
@@ -1050,13 +1053,13 @@ export default function DashboardDemoPage() {
           {activeTab === "pos" && (
             <div className="space-y-4">
               {/* POS Top Control Bar */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 {/* Store Selector */}
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Điểm Bán Hiện Tại:
                   </span>
-                  <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs">
+                  <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 text-xs">
                     {stores.length > 0 ? (
                       stores.map((st) => (
                         <button
@@ -1064,8 +1067,8 @@ export default function DashboardDemoPage() {
                           onClick={() => setPosStore(st.id)}
                           className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                             posStore === st.id
-                              ? "bg-purple-600 text-white shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-100"
                           }`}
                         >
                           {st.name.replace("NEXORA Store — ", "").replace("Cửa Hàng ", "CH ")}
@@ -1077,8 +1080,8 @@ export default function DashboardDemoPage() {
                           onClick={() => setPosStore("store1")}
                           className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                             posStore === "store1"
-                              ? "bg-purple-600 text-white shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-100"
                           }`}
                         >
                           Chi Nhánh 1 (Quận 1)
@@ -1087,8 +1090,8 @@ export default function DashboardDemoPage() {
                           onClick={() => setPosStore("store2")}
                           className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                             posStore === "store2"
-                              ? "bg-purple-600 text-white shadow-sm"
-                              : "text-slate-600 hover:text-slate-900"
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-100"
                           }`}
                         >
                           Chi Nhánh 2 (Bình Thạnh)
@@ -1100,8 +1103,8 @@ export default function DashboardDemoPage() {
 
                 {/* Cashier and Barcode Sim Button */}
                 <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-600 hidden sm:block">
-                    Thu ngân: <strong className="text-slate-900">Nguyễn Lan (Ca sáng)</strong>
+                  <div className="text-xs text-slate-600 dark:text-slate-400 hidden sm:block">
+                    Thu ngân: <strong className="text-slate-900 dark:text-slate-100">Nguyễn Lan (Ca sáng)</strong>
                   </div>
                   <button
                     onClick={handleSimulateBarcodeScan}
@@ -1122,7 +1125,7 @@ export default function DashboardDemoPage() {
                 {/* LEFT: PRODUCTS SELECTOR (Col 8) */}
                 <div className="lg:col-span-7 xl:col-span-8 space-y-4">
                   {/* Category Filter Pills & Search */}
-                  <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <div className="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                     <div className="relative">
                       <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                       <input
@@ -1130,7 +1133,7 @@ export default function DashboardDemoPage() {
                         value={posSearch}
                         onChange={(e) => setPosSearch(e.target.value)}
                         placeholder="Tìm sản phẩm theo tên, mã SKU hoặc quét mã vạch..."
-                        className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 bg-slate-50/50"
+                        className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50/50 dark:bg-slate-800/50"
                       />
                     </div>
 
@@ -1150,8 +1153,8 @@ export default function DashboardDemoPage() {
                           onClick={() => setPosCategory(cat.id)}
                           className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-all ${
                             posCategory === cat.id
-                              ? "bg-purple-600 text-white shadow-sm font-semibold"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-emerald-600 text-white shadow-sm font-semibold"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 dark:bg-slate-700"
                           }`}
                         >
                           {cat.label}
@@ -1172,33 +1175,44 @@ export default function DashboardDemoPage() {
                           onClick={() => !isOutOfStock && addToCart(p)}
                           className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                             isOutOfStock
-                              ? "bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed"
-                              : "bg-white border-slate-200 hover:border-purple-400 hover:shadow-md cursor-pointer group"
+                              ? "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60 cursor-not-allowed"
+                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-400 hover:shadow-md cursor-pointer group"
                           }`}
                         >
                           <div>
+                            {/* Ảnh thật của sản phẩm */}
+                            <div className="relative h-32 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 mb-3">
+                              <Image
+                                src={p.image}
+                                alt={`Ảnh sản phẩm ${p.name}`}
+                                fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            </div>
+
                             {/* Card Header Tag */}
-                            <div className="flex items-center justify-between text-[10px] mb-2">
-                              <span className="font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded">
+                            <div className="flex items-center justify-between text-xs mb-2">
+                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded">
                                 {p.categoryName}
                               </span>
-                              <span className="text-slate-400 font-mono text-[9px]">{p.sku}</span>
+                              <span className="text-slate-400 font-mono text-[11px]">{p.sku}</span>
                             </div>
 
                             {/* Product Name & Brand */}
-                            <h3 className="font-bold text-xs text-slate-900 group-hover:text-purple-600 transition-colors line-clamp-2 leading-snug">
+                            <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
                               {p.name}
                             </h3>
-                            <div className="text-[10px] text-slate-500 mt-1">{p.brand}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{p.brand}</div>
                           </div>
 
                           {/* Price & Stock Footer */}
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <div>
-                              <div className="text-sm font-black text-slate-900">
+                              <div className="text-sm font-black text-slate-900 dark:text-slate-100">
                                 {p.sellingPrice.toLocaleString("vi-VN")} ₫
                               </div>
-                              <div className="text-[10px] font-semibold flex items-center gap-1 mt-0.5">
+                              <div className="text-xs font-semibold flex items-center gap-1 mt-0.5">
                                 {isOutOfStock ? (
                                   <span className="text-rose-600">Hết hàng tại quầy</span>
                                 ) : (
@@ -1217,8 +1231,8 @@ export default function DashboardDemoPage() {
                               }}
                               className={`p-2 rounded-xl text-xs font-bold transition-all ${
                                 isOutOfStock
-                                  ? "bg-slate-200 text-slate-400"
-                                  : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm group-hover:scale-105"
+                                  ? "bg-slate-200 dark:bg-slate-700 text-slate-400"
+                                  : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm group-hover:scale-105"
                               }`}
                               title="Thêm vào giỏ"
                             >
@@ -1232,12 +1246,12 @@ export default function DashboardDemoPage() {
                 </div>
 
                 {/* RIGHT: CART & CHECKOUT PANEL (Col 4) */}
-                <div className="lg:col-span-5 xl:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sticky top-20">
+                <div className="lg:col-span-5 xl:col-span-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sticky top-20">
                   {/* Cart Header */}
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <ShoppingCart className="w-4 h-4 text-purple-600" />
-                      <h2 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
+                      <ShoppingCart className="w-4 h-4 text-emerald-600" />
+                      <h2 className="font-bold text-xs text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                         Giỏ Hàng Quầy ({posCart.reduce((sum, item) => sum + item.qty, 0)})
                       </h2>
                     </div>
@@ -1253,7 +1267,7 @@ export default function DashboardDemoPage() {
 
                   {/* Customer Phone Input */}
                   <div className="mt-3">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                       Số Điện Thoại Khách Hàng:
                     </label>
                     <input
@@ -1261,28 +1275,37 @@ export default function DashboardDemoPage() {
                       value={posCustomerPhone}
                       onChange={(e) => setPosCustomerPhone(e.target.value)}
                       placeholder="Nhập số điện thoại khách..."
-                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-purple-500 focus:outline-none bg-slate-50/50"
+                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none bg-slate-50/50 dark:bg-slate-800/50"
                     />
                   </div>
 
                   {/* Cart Items List */}
-                  <div className="mt-4 flex-1 max-h-64 overflow-y-auto divide-y divide-slate-100 border border-slate-100 rounded-xl">
+                  <div className="mt-4 flex-1 max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 border border-slate-100 dark:border-slate-800 rounded-xl">
                     {posCart.length === 0 ? (
                       <div className="p-8 text-center text-slate-400">
                         <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         <div className="text-xs font-semibold">Giỏ hàng đang trống</div>
-                        <p className="text-[10px] mt-1 text-slate-400">
+                        <p className="text-xs mt-1 text-slate-400">
                           Nhấp chọn sản phẩm bên trái hoặc quét mã vạch
                         </p>
                       </div>
                     ) : (
                       posCart.map((item) => (
-                        <div key={item.product.id} className="p-3 bg-white flex items-center justify-between gap-2">
+                        <div key={item.product.id} className="p-3 bg-white dark:bg-slate-900 flex items-center justify-between gap-2">
+                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                            <Image
+                              src={item.product.image}
+                              alt={`Ảnh sản phẩm ${item.product.name}`}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                            />
+                          </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-xs font-bold text-slate-900 truncate">
+                            <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                               {item.product.name}
                             </div>
-                            <div className="text-[10px] text-slate-500">
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
                               {item.product.sellingPrice.toLocaleString("vi-VN")} ₫ / cái
                             </div>
                           </div>
@@ -1291,16 +1314,16 @@ export default function DashboardDemoPage() {
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => updateCartQty(item.product.id, -1)}
-                              className="w-6 h-6 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center text-xs font-bold"
+                              className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 dark:bg-slate-700 flex items-center justify-center text-xs font-bold"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="w-6 text-center text-xs font-bold text-slate-900">
+                            <span className="w-6 text-center text-xs font-bold text-slate-900 dark:text-slate-100">
                               {item.qty}
                             </span>
                             <button
                               onClick={() => updateCartQty(item.product.id, 1)}
-                              className="w-6 h-6 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center text-xs font-bold"
+                              className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 dark:bg-slate-700 flex items-center justify-center text-xs font-bold"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -1318,18 +1341,18 @@ export default function DashboardDemoPage() {
                   </div>
 
                   {/* Discount Selector */}
-                  <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between text-xs mb-2">
-                      <span className="font-semibold text-slate-600">Chiết Khấu (Giảm giá):</span>
+                      <span className="font-semibold text-slate-600 dark:text-slate-400">Chiết Khấu (Giảm giá):</span>
                       <div className="flex items-center gap-1">
                         {[0, 5, 10, 15].map((pct) => (
                           <button
                             key={pct}
                             onClick={() => setPosDiscountPercent(pct)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                            className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
                               posDiscountPercent === pct
-                                ? "bg-purple-600 text-white"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                ? "bg-emerald-600 text-white"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 dark:bg-slate-700"
                             }`}
                           >
                             {pct}%
@@ -1340,7 +1363,7 @@ export default function DashboardDemoPage() {
 
                     {/* Payment Method Selector */}
                     <div className="mt-3">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                         Phương Thức Thanh Toán:
                       </span>
                       <div className="grid grid-cols-3 gap-2 text-xs">
@@ -1348,82 +1371,82 @@ export default function DashboardDemoPage() {
                           onClick={() => setPosPaymentMethod("CASH")}
                           className={`py-2 px-2 rounded-xl font-bold flex flex-col items-center gap-1 border transition-all ${
                             posPaymentMethod === "CASH"
-                              ? "bg-purple-50 border-purple-500 text-purple-700 shadow-sm"
-                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm"
+                              : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
                           }`}
                         >
                           <Receipt className="w-3.5 h-3.5" />
-                          <span className="text-[10px]">Tiền Mặt</span>
+                          <span className="text-xs">Tiền Mặt</span>
                         </button>
 
                         <button
                           onClick={() => setPosPaymentMethod("VIETQR")}
                           className={`py-2 px-2 rounded-xl font-bold flex flex-col items-center gap-1 border transition-all ${
                             posPaymentMethod === "VIETQR"
-                              ? "bg-purple-50 border-purple-500 text-purple-700 shadow-sm"
-                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm"
+                              : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
                           }`}
                         >
                           <QrCode className="w-3.5 h-3.5" />
-                          <span className="text-[10px]">VietQR</span>
+                          <span className="text-xs">VietQR</span>
                         </button>
 
                         <button
                           onClick={() => setPosPaymentMethod("CARD")}
                           className={`py-2 px-2 rounded-xl font-bold flex flex-col items-center gap-1 border transition-all ${
                             posPaymentMethod === "CARD"
-                              ? "bg-purple-50 border-purple-500 text-purple-700 shadow-sm"
-                              : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                              ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-sm"
+                              : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
                           }`}
                         >
                           <CreditCard className="w-3.5 h-3.5" />
-                          <span className="text-[10px]">Thẻ POS</span>
+                          <span className="text-xs">Thẻ POS</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Dynamic Cash Tender Box or VietQR Display */}
                     {posPaymentMethod === "CASH" && posCart.length > 0 && (
-                      <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+                      <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-600">Khách Đưa:</span>
+                          <span className="text-slate-600 dark:text-slate-400">Khách Đưa:</span>
                           <input
                             type="number"
                             value={posCashTendered || ""}
                             onChange={(e) => setPosCashTendered(Number(e.target.value))}
                             placeholder={cartTotalAmount.toString()}
-                            className="w-32 px-2 py-1 rounded border border-slate-200 text-right font-bold text-slate-900 bg-white"
+                            className="w-32 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-right font-bold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
                           />
                         </div>
                         <div className="flex items-center gap-1 justify-end">
                           <button
                             onClick={() => setPosCashTendered(cartTotalAmount)}
-                            className="px-1.5 py-0.5 rounded bg-slate-200 text-[9px] font-bold hover:bg-slate-300"
+                            className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold hover:bg-slate-300 dark:hover:bg-slate-600"
                           >
                             Đủ tiền
                           </button>
                           <button
                             onClick={() => setPosCashTendered(500000)}
-                            className="px-1.5 py-0.5 rounded bg-slate-200 text-[9px] font-bold hover:bg-slate-300"
+                            className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold hover:bg-slate-300 dark:hover:bg-slate-600"
                           >
                             500k
                           </button>
                           <button
                             onClick={() => setPosCashTendered(1000000)}
-                            className="px-1.5 py-0.5 rounded bg-slate-200 text-[9px] font-bold hover:bg-slate-300"
+                            className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold hover:bg-slate-300 dark:hover:bg-slate-600"
                           >
                             1M
                           </button>
                           <button
                             onClick={() => setPosCashTendered(2000000)}
-                            className="px-1.5 py-0.5 rounded bg-slate-200 text-[9px] font-bold hover:bg-slate-300"
+                            className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold hover:bg-slate-300 dark:hover:bg-slate-600"
                           >
                             2M
                           </button>
                         </div>
                         {posCashTendered > 0 && (
-                          <div className="flex items-center justify-between pt-1 border-t border-slate-200 font-bold">
-                            <span className="text-slate-600">Tiền Thối Lại:</span>
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-700 font-bold">
+                            <span className="text-slate-600 dark:text-slate-400">Tiền Thối Lại:</span>
                             <span className="text-emerald-600">{cartChangeDue.toLocaleString("vi-VN")} ₫</span>
                           </div>
                         )}
@@ -1431,27 +1454,27 @@ export default function DashboardDemoPage() {
                     )}
 
                     {posPaymentMethod === "VIETQR" && posCart.length > 0 && (
-                      <div className="mt-3 p-3 bg-purple-50 rounded-xl border border-purple-200 text-center text-xs">
-                        <div className="font-bold text-purple-900 mb-1">Quét Mã VietQR Chuyển Khoản</div>
-                        <div className="w-28 h-28 mx-auto bg-white p-2 rounded-lg border border-purple-200 shadow-sm flex items-center justify-center my-1.5">
+                      <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center text-xs">
+                        <div className="font-bold text-emerald-900 dark:text-emerald-200 mb-1">Quét Mã VietQR Chuyển Khoản</div>
+                        <div className="w-28 h-28 mx-auto bg-white dark:bg-slate-900 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-sm flex items-center justify-center my-1.5">
                           {/* Simulated Dynamic VietQR Box */}
                           <div className="text-center">
-                            <QrCode className="w-16 h-16 text-slate-800 mx-auto" />
-                            <div className="text-[8px] font-mono font-bold text-purple-700">NAPAS 247</div>
+                            <QrCode className="w-16 h-16 text-slate-800 dark:text-slate-200 mx-auto" />
+                            <div className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300">NAPAS 247</div>
                           </div>
                         </div>
-                        <div className="text-[10px] text-slate-600">
+                        <div className="text-xs text-slate-600 dark:text-slate-400">
                           MBBank • 0988 777 666 • NEXORA STORE
                         </div>
-                        <div className="text-[10px] font-mono text-purple-700 font-bold mt-0.5">
+                        <div className="text-xs font-mono text-emerald-700 dark:text-emerald-300 font-bold mt-0.5">
                           Số tiền: {cartTotalAmount.toLocaleString("vi-VN")} ₫
                         </div>
                       </div>
                     )}
 
                     {/* Price Breakdown Summary */}
-                    <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between text-slate-600">
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                         <span>Tiền hàng:</span>
                         <span>{cartSubtotal.toLocaleString("vi-VN")} ₫</span>
                       </div>
@@ -1461,9 +1484,9 @@ export default function DashboardDemoPage() {
                           <span>-{cartDiscountAmount.toLocaleString("vi-VN")} ₫</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-sm font-black text-slate-900 pt-1.5 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-sm font-black text-slate-900 dark:text-slate-100 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                         <span>Tổng Thanh Toán:</span>
-                        <span className="text-purple-700 text-base">
+                        <span className="text-emerald-700 dark:text-emerald-300 text-base">
                           {cartTotalAmount.toLocaleString("vi-VN")} ₫
                         </span>
                       </div>
@@ -1475,8 +1498,8 @@ export default function DashboardDemoPage() {
                       disabled={posCart.length === 0}
                       className={`w-full mt-4 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all ${
                         posCart.length === 0
-                          ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                          : "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/25 active:scale-95"
+                          ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
+                          : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 active:scale-95"
                       }`}
                     >
                       <Receipt className="w-4 h-4" />
@@ -1494,7 +1517,7 @@ export default function DashboardDemoPage() {
           {activeTab === "orders" && (
             <div className="space-y-6">
               {/* Filter and Search Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center gap-3 flex-1 max-w-md">
                   <div className="relative w-full">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
@@ -1503,7 +1526,7 @@ export default function DashboardDemoPage() {
                       value={orderSearchText}
                       onChange={(e) => setOrderSearchText(e.target.value)}
                       placeholder="Tìm theo mã đơn, tên hoặc SĐT khách..."
-                      className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none bg-slate-50/50"
+                      className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none bg-slate-50/50 dark:bg-slate-800/50"
                     />
                   </div>
                 </div>
@@ -1513,7 +1536,7 @@ export default function DashboardDemoPage() {
                   <select
                     value={orderChannelFilter}
                     onChange={(e) => setOrderChannelFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-700 font-medium focus:ring-1 focus:ring-blue-500"
+                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="ALL">Tất cả kênh bán</option>
                     <option value="SHOPEE">Shopee Mall</option>
@@ -1527,7 +1550,7 @@ export default function DashboardDemoPage() {
                   <select
                     value={orderStatusFilter}
                     onChange={(e) => setOrderStatusFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-700 font-medium focus:ring-1 focus:ring-blue-500"
+                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-medium focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="ALL">Tất cả trạng thái</option>
                     <option value="PENDING">Chờ xử lý</option>
@@ -1540,10 +1563,10 @@ export default function DashboardDemoPage() {
               </div>
 
               {/* Orders Table */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                    <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs">
                       <tr>
                         <th className="py-3.5 px-4">Mã Đơn Hàng</th>
                         <th className="py-3.5 px-4">Khách Hàng</th>
@@ -1554,7 +1577,7 @@ export default function DashboardDemoPage() {
                         <th className="py-3.5 px-4 text-right">Hành Động</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {filteredOrders.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="py-8 text-center text-slate-400">
@@ -1566,39 +1589,39 @@ export default function DashboardDemoPage() {
                           <tr
                             key={ord.id}
                             onClick={() => setSelectedOrder(ord)}
-                            className="hover:bg-slate-50/80 cursor-pointer transition-colors"
+                            className="hover:bg-slate-50/80 dark:hover:bg-slate-800/80 dark:bg-slate-800/80 cursor-pointer transition-colors"
                           >
                             <td className="py-3.5 px-4 font-mono font-bold text-emerald-600">
                               {ord.id}
-                              <div className="text-[10px] text-slate-400 font-sans font-normal">{ord.createdAt}</div>
+                              <div className="text-xs text-slate-400 font-sans font-normal">{ord.createdAt}</div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-bold text-slate-900">{ord.customer}</div>
+                              <div className="font-bold text-slate-900 dark:text-slate-100">{ord.customer}</div>
                               <div className="text-slate-400 text-[11px]">{ord.phone}</div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${ord.channelBadgeColor}`}>
+                              <span className={`px-2 py-0.5 rounded text-xs font-bold border ${ord.channelBadgeColor}`}>
                                 {ord.channelLabel}
                               </span>
                             </td>
                             <td className="py-3.5 px-4 max-w-xs truncate">
-                              <div className="text-slate-900 font-medium truncate">
+                              <div className="text-slate-900 dark:text-slate-100 font-medium truncate">
                                 {ord.items[0]?.name}
                               </div>
                               {ord.items.length > 1 && (
-                                <div className="text-[10px] text-slate-400 font-medium">
+                                <div className="text-xs text-slate-400 font-medium">
                                   + {ord.items.length - 1} sản phẩm khác
                                 </div>
                               )}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-bold text-slate-900">
+                              <div className="font-bold text-slate-900 dark:text-slate-100">
                                 {ord.totalAmount.toLocaleString("vi-VN")} ₫
                               </div>
-                              <div className="text-[10px] text-slate-400">{ord.paymentMethod}</div>
+                              <div className="text-xs text-slate-400">{ord.paymentMethod}</div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${ord.statusColor}`}>
+                              <span className={`px-2 py-0.5 rounded text-xs font-bold border ${ord.statusColor}`}>
                                 {ord.statusLabel}
                               </span>
                             </td>
@@ -1608,7 +1631,7 @@ export default function DashboardDemoPage() {
                                   e.stopPropagation();
                                   setSelectedOrder(ord);
                                 }}
-                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 dark:bg-emerald-950/50 rounded-lg"
                                 title="Xem chi tiết"
                               >
                                 <Eye className="w-4 h-4" />
@@ -1632,8 +1655,8 @@ export default function DashboardDemoPage() {
               {/* Header with Transfer Action Button */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Ma Trận Tồn Kho Đa Chi Nhánh</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Ma Trận Tồn Kho Đa Chi Nhánh</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Theo dõi tồn thực tế, số lượng đang giữ và tồn khả dụng thời gian thực
                   </p>
                 </div>
@@ -1648,24 +1671,24 @@ export default function DashboardDemoPage() {
 
               {/* Warehouse Quick Summary Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200">
-                  <div className="text-[10px] font-bold text-purple-600 uppercase">Kho Chi Nhánh 1 (Quận 1)</div>
-                  <div className="text-xl font-black text-slate-900 mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                  <div className="text-xs font-bold text-emerald-600 uppercase">Kho Chi Nhánh 1 (Quận 1)</div>
+                  <div className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">
                     {products.reduce((s, p) => s + p.stockStore1, 0)} Sản phẩm
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Phục vụ bán lẻ trực tiếp tại quầy POS 1</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-slate-200">
-                  <div className="text-[10px] font-bold text-indigo-600 uppercase">Kho Chi Nhánh 2 (Bình Thạnh)</div>
-                  <div className="text-xl font-black text-slate-900 mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                  <div className="text-xs font-bold text-indigo-600 uppercase">Kho Chi Nhánh 2 (Bình Thạnh)</div>
+                  <div className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">
                     {products.reduce((s, p) => s + p.stockStore2, 0)} Sản phẩm
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Phục vụ bán lẻ trực tiếp tại quầy POS 2</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-slate-200">
-                  <div className="text-[10px] font-bold text-emerald-600 uppercase">Đang Giữ Cho Sàn (Committed)</div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                  <div className="text-xs font-bold text-emerald-600 uppercase">Đang Giữ Cho Sàn (Committed)</div>
                   <div className="text-xl font-black text-emerald-600 mt-1">
                     {products.reduce((s, p) => s + p.committed, 0)} Sản phẩm
                   </div>
@@ -1674,10 +1697,10 @@ export default function DashboardDemoPage() {
               </div>
 
               {/* Inventory Matrix Table */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                    <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs">
                       <tr>
                         <th className="py-3.5 px-4">Sản Phẩm Gia Dụng</th>
                         <th className="py-3.5 px-4">Mã SKU & Barcode</th>
@@ -1688,28 +1711,28 @@ export default function DashboardDemoPage() {
                         <th className="py-3.5 px-4 text-right">Trạng Thái</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {products.map((p) => {
                         const available = Math.max(0, p.stockStore1 + p.stockStore2 - p.committed);
                         const isLow = available <= 5;
 
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                          <tr key={p.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/80 dark:bg-slate-800/80 transition-colors">
                             <td className="py-3.5 px-4">
-                              <div className="font-bold text-slate-900">{p.name}</div>
+                              <div className="font-bold text-slate-900 dark:text-slate-100">{p.name}</div>
                               <div className="text-slate-400 text-[11px]">{p.brand}</div>
                             </td>
                             <td className="py-3.5 px-4 font-mono">
-                              <span className="font-bold text-slate-800">{p.sku}</span>
-                              <div className="text-slate-400 text-[10px]">{p.barcode}</div>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">{p.sku}</span>
+                              <div className="text-slate-400 text-xs">{p.barcode}</div>
                             </td>
-                            <td className="py-3.5 px-4 text-center font-bold text-purple-700">
+                            <td className="py-3.5 px-4 text-center font-bold text-emerald-700 dark:text-emerald-300">
                               {p.stockStore1}
                             </td>
                             <td className="py-3.5 px-4 text-center font-bold text-indigo-700">
                               {p.stockStore2}
                             </td>
-                            <td className="py-3.5 px-4 text-center text-slate-500 font-semibold">
+                            <td className="py-3.5 px-4 text-center text-slate-500 dark:text-slate-400 font-semibold">
                               {p.committed}
                             </td>
                             <td className="py-3.5 px-4 text-center">
@@ -1719,11 +1742,11 @@ export default function DashboardDemoPage() {
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               {isLow ? (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800">
                                   Sắp hết hàng
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800">
                                   Đủ bán
                                 </span>
                               )}
@@ -1745,8 +1768,8 @@ export default function DashboardDemoPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Trung Tâm Kết Nối Kênh Bán Hàng</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Trung Tâm Kết Nối Kênh Bán Hàng</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Quản lý ủy quyền API và đồng bộ 2 chiều với Shopee, TikTok Shop, Facebook
                   </p>
                 </div>
@@ -1765,27 +1788,27 @@ export default function DashboardDemoPage() {
               {/* Channel Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {channels.map((ch) => (
-                  <div key={ch.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+                  <div key={ch.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-300">
                             {ch.platform === "Shopee" && <span className="text-amber-600 font-extrabold">SP</span>}
                             {ch.platform === "TikTok Shop" && <span className="text-sky-600 font-extrabold">TT</span>}
                             {ch.platform === "Facebook" && <span className="text-emerald-600 font-extrabold">FB</span>}
                             {ch.platform === "Lazada" && <span className="text-indigo-600 font-extrabold">LZ</span>}
                           </div>
                           <div>
-                            <h3 className="font-bold text-sm text-slate-900">{ch.name}</h3>
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{ch.name}</h3>
                             <div className="text-[11px] text-slate-400 font-mono">ID: {ch.accountId}</div>
                           </div>
                         </div>
 
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          className={`px-2 py-0.5 rounded text-xs font-bold border ${
                             ch.status === "CONNECTED"
-                              ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                              : "bg-amber-100 text-amber-800 border-amber-200"
+                              ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
+                              : "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800"
                           }`}
                         >
                           {ch.status === "CONNECTED" ? "Đang Kết Nối" : "Cần Chú Ý"}
@@ -1793,19 +1816,19 @@ export default function DashboardDemoPage() {
                       </div>
 
                       <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                        <div className="p-3 bg-slate-50 rounded-xl">
-                          <span className="text-slate-400 text-[10px] block">Sản phẩm đã đồng bộ</span>
-                          <span className="font-bold text-slate-900 text-sm">{ch.totalSyncedProducts} SKU</span>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                          <span className="text-slate-400 text-xs block">Sản phẩm đã đồng bộ</span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">{ch.totalSyncedProducts} SKU</span>
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-xl">
-                          <span className="text-slate-400 text-[10px] block">Đơn hàng chờ xử lý</span>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                          <span className="text-slate-400 text-xs block">Đơn hàng chờ xử lý</span>
                           <span className="font-bold text-emerald-600 text-sm">{ch.pendingOrders} Đơn</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                      <span>Đồng bộ gần nhất: <strong className="text-slate-700">{ch.lastSyncedAt}</strong></span>
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span>Đồng bộ gần nhất: <strong className="text-slate-700 dark:text-slate-300">{ch.lastSyncedAt}</strong></span>
                       <button
                         onClick={handleTriggerChannelSync}
                         className="text-emerald-600 font-semibold hover:underline flex items-center gap-1"
@@ -1826,35 +1849,45 @@ export default function DashboardDemoPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Danh Mục Sản Phẩm Đồ Gia Dụng</h2>
-                  <p className="text-xs text-slate-500">Quản lý giá vốn, giá bán lẻ và phân loại danh mục</p>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Danh Mục Sản Phẩm Đồ Gia Dụng</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Quản lý giá vốn, giá bán lẻ và phân loại danh mục</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {products.map((p) => (
-                  <div key={p.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+                  <div key={p.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between text-[10px] mb-2">
-                        <span className="font-bold text-blue-700 bg-emerald-50 px-2 py-0.5 rounded">
+                      {/* Ảnh thật của sản phẩm */}
+                      <div className="relative h-36 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 mb-3">
+                        <Image
+                          src={p.image}
+                          alt={`Ảnh sản phẩm ${p.name}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="font-bold text-blue-700 dark:text-blue-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded">
                           {p.categoryName}
                         </span>
                         <span className="text-slate-400 font-mono">{p.sku}</span>
                       </div>
-                      <h3 className="font-bold text-xs text-slate-900 leading-snug">{p.name}</h3>
-                      <div className="text-[11px] text-slate-500 mt-1">{p.brand}</div>
+                      <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 leading-snug">{p.name}</h3>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{p.brand}</div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                       <div>
-                        <div className="text-[10px] text-slate-400">Giá bán lẻ</div>
-                        <div className="font-bold text-slate-900 text-sm">
+                        <div className="text-xs text-slate-400">Giá bán lẻ</div>
+                        <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                           {p.sellingPrice.toLocaleString("vi-VN")} ₫
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[10px] text-slate-400">Giá vốn</div>
-                        <div className="font-medium text-slate-600">
+                        <div className="text-xs text-slate-400">Giá vốn</div>
+                        <div className="font-medium text-slate-600 dark:text-slate-400">
                           {p.costPrice.toLocaleString("vi-VN")} ₫
                         </div>
                       </div>
@@ -1869,41 +1902,41 @@ export default function DashboardDemoPage() {
               TAB BỔ TRỢ: HỘP THƯ HỘI THOẠI (CHAT)
           =================================================================== */}
           {activeTab === "chat" && (
-            <div className="h-[calc(100vh-140px)] flex bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="w-80 border-r border-slate-200 flex flex-col shrink-0">
-                <div className="p-3 border-b border-slate-200 text-xs font-bold text-slate-700">
+            <div className="h-[calc(100vh-140px)] flex bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+              <div className="w-80 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0">
+                <div className="p-3 border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300">
                   Hội Thoại Mới Nhất
                 </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                   {MOCK_CONVERSATIONS.map((c) => (
                     <div
                       key={c.id}
                       onClick={() => setSelectedConv(c)}
                       className={`p-3.5 cursor-pointer transition-colors ${
-                        selectedConv.id === c.id ? "bg-emerald-50/70 border-l-4 border-blue-600" : "hover:bg-slate-50"
+                        selectedConv.id === c.id ? "bg-emerald-50/70 border-l-4 border-blue-600" : "hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-900">{c.customerName}</span>
-                        <span className="text-[10px] text-slate-400">{c.lastTime}</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">{c.customerName}</span>
+                        <span className="text-xs text-slate-400">{c.lastTime}</span>
                       </div>
-                      <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">{c.platform}</div>
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-1">{c.lastMessage}</p>
+                      <div className="text-xs text-emerald-600 font-semibold mt-0.5">{c.platform}</div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-1">{c.lastMessage}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Chat View */}
-              <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50">
-                <div className="h-14 px-5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+              <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-slate-800/50">
+                <div className="h-14 px-5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
                   <div>
-                    <h3 className="font-bold text-xs text-slate-900">{selectedConv.customerName}</h3>
-                    <p className="text-[10px] text-slate-400">Kênh: {selectedConv.platform}</p>
+                    <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">{selectedConv.customerName}</h3>
+                    <p className="text-xs text-slate-400">Kênh: {selectedConv.platform}</p>
                   </div>
                   <button
                     onClick={() => setActiveTab("pos")}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-1 shadow-sm"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-1 shadow-sm"
                   >
                     <Barcode className="w-3.5 h-3.5" />
                     <span>Mở POS Chốt Đơn</span>
@@ -1911,19 +1944,19 @@ export default function DashboardDemoPage() {
                 </div>
 
                 <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
-                  <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm max-w-md">
-                    <div className="text-slate-800">{selectedConv.lastMessage}</div>
-                    <div className="text-[9px] text-slate-400 mt-1 text-right">{selectedConv.lastTime}</div>
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm max-w-md">
+                    <div className="text-slate-800 dark:text-slate-200">{selectedConv.lastMessage}</div>
+                    <div className="text-[11px] text-slate-400 mt-1 text-right">{selectedConv.lastTime}</div>
                   </div>
                 </div>
 
-                <div className="p-3 bg-white border-t border-slate-200 flex gap-2">
+                <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex gap-2">
                   <input
                     type="text"
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
                     placeholder="Nhập tin nhắn trả lời khách hàng..."
-                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   />
                   <button
                     onClick={() => {
@@ -1947,13 +1980,13 @@ export default function DashboardDemoPage() {
           {activeTab === "stores" && (
             <div className="space-y-6">
               {/* Header with Title and Action Buttons */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-emerald-600" />
                     <span>Hệ Thống {stores.length} Cửa Hàng & Điểm Bán Vật Lý</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Quản lý mạng lưới chi nhánh bán lẻ, gắn kết kho hàng mặc định và đồng bộ trực tiếp với quầy POS
                   </p>
                 </div>
@@ -1962,7 +1995,7 @@ export default function DashboardDemoPage() {
                   <button
                     onClick={fetchStoresAndWarehouses}
                     disabled={isStoresLoading}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 dark:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all disabled:opacity-50"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isStoresLoading ? "animate-spin text-emerald-600" : ""}`} />
                     <span>{isStoresLoading ? "Đang tải..." : "Làm Mới"}</span>
@@ -1983,37 +2016,37 @@ export default function DashboardDemoPage() {
 
               {/* KPI Strip */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                  <span className="text-[11px] font-medium text-slate-500 block">Tổng Điểm Bán</span>
-                  <div className="text-2xl font-black text-slate-900 mt-1">{stores.length}</div>
-                  <div className="text-[10px] text-emerald-600 font-semibold mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">Tổng Điểm Bán</span>
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{stores.length}</div>
+                  <div className="text-xs text-emerald-600 font-semibold mt-1">
                     {stores.filter((s) => s.isActive).length} Đang hoạt động
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                  <span className="text-[11px] font-medium text-slate-500 block">Tổng Kho Lưu Trữ</span>
-                  <div className="text-2xl font-black text-slate-900 mt-1">{warehouses.length}</div>
-                  <div className="text-[10px] text-purple-600 font-semibold mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">Tổng Kho Lưu Trữ</span>
+                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{warehouses.length}</div>
+                  <div className="text-xs text-emerald-600 font-semibold mt-1">
                     {warehouses.filter((w) => w.type === "CENTRAL").length} Kho tổng •{" "}
                     {warehouses.filter((w) => w.type === "STORE_ATTACHED").length} Kho quầy
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                  <span className="text-[11px] font-medium text-slate-500 block">Doanh Số Quầy Toàn Hệ Thống</span>
-                  <div className="text-2xl font-black text-emerald-700 mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">Doanh Số Quầy Toàn Hệ Thống</span>
+                  <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
                     {stores
                       .reduce((sum, s) => sum + (s.todayRevenue || 0), 0)
                       .toLocaleString("vi-VN")}{" "}
                     ₫
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-1">Cập nhật theo thời gian thực</div>
+                  <div className="text-xs text-slate-400 mt-1">Cập nhật theo thời gian thực</div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                  <span className="text-[11px] font-medium text-slate-500 block">Tỷ Lệ Khóa Kho Mặc Định</span>
-                  <div className="text-2xl font-black text-purple-700 mt-1">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block">Tỷ Lệ Khóa Kho Mặc Định</span>
+                  <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
                     {stores.length > 0
                       ? Math.round(
                           (stores.filter((s) => s.defaultWarehouseId).length / stores.length) * 100
@@ -2021,14 +2054,14 @@ export default function DashboardDemoPage() {
                       : 100}
                     %
                   </div>
-                  <div className="text-[10px] text-emerald-600 font-semibold mt-1">Tránh bán vượt tồn kho</div>
+                  <div className="text-xs text-emerald-600 font-semibold mt-1">Tránh bán vượt tồn kho</div>
                 </div>
               </div>
 
               {/* Stores Cards Grid */}
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     Danh Sách Chi Nhánh Cửa Hàng
                   </h3>
                   <span className="text-[11px] text-slate-400">
@@ -2040,22 +2073,22 @@ export default function DashboardDemoPage() {
                   {stores.map((st) => (
                     <div
                       key={st.id}
-                      className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-emerald-300 transition-all flex flex-col justify-between"
+                      className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-300 dark:border-emerald-700 transition-all flex flex-col justify-between"
                     >
                       <div>
                         {/* Card Header */}
-                        <div className="flex items-start justify-between gap-2 pb-3 border-b border-slate-100">
+                        <div className="flex items-start justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                           <div>
-                            <span className="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="font-mono text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                               {st.code}
                             </span>
-                            <h3 className="font-bold text-slate-900 text-sm mt-1.5">{st.name}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm mt-1.5">{st.name}</h3>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`px-2 py-0.5 rounded text-xs font-bold ${
                               st.isActive
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-slate-100 text-slate-600"
+                                ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                             }`}
                           >
                             {st.isActive ? "Đang Mở Cửa" : "Tạm Dừng"}
@@ -2063,7 +2096,7 @@ export default function DashboardDemoPage() {
                         </div>
 
                         {/* Store Info */}
-                        <div className="mt-4 space-y-2.5 text-xs text-slate-600">
+                        <div className="mt-4 space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
                           <div className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                             <span className="line-clamp-2">{st.address}</span>
@@ -2072,14 +2105,14 @@ export default function DashboardDemoPage() {
                             <Phone className="w-4 h-4 text-slate-400 shrink-0" />
                             <span>Hotline: {st.phoneNumber || "028 3822 1199"}</span>
                           </div>
-                          <div className="flex items-start gap-2 pt-1 border-t border-slate-100">
-                            <Store className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                          <div className="flex items-start gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <Store className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                             <div>
                               <span className="text-slate-400 text-[11px]">Kho hàng xuất mặc định:</span>
-                              <div className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
+                              <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
                                 <span>{st.defaultWarehouse?.name || "Kho mặc định (Tại chỗ)"}</span>
                                 {st.defaultWarehouse?.code && (
-                                  <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-50 text-purple-700">
+                                  <span className="font-mono text-[11px] px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300">
                                     {st.defaultWarehouse.code}
                                   </span>
                                 )}
@@ -2089,16 +2122,16 @@ export default function DashboardDemoPage() {
                         </div>
 
                         {/* Financial Snapshot */}
-                        <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 gap-3">
+                        <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 grid grid-cols-2 gap-3">
                           <div>
-                            <div className="text-[10px] text-slate-400">Doanh Số Hôm Nay</div>
-                            <div className="text-sm font-bold text-slate-900">
+                            <div className="text-xs text-slate-400">Doanh Số Hôm Nay</div>
+                            <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
                               {(st.todayRevenue || 0).toLocaleString("vi-VN")} ₫
                             </div>
                           </div>
                           <div>
-                            <div className="text-[10px] text-slate-400">Số Lượng Hóa Đơn</div>
-                            <div className="text-sm font-bold text-slate-900">
+                            <div className="text-xs text-slate-400">Số Lượng Hóa Đơn</div>
+                            <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
                               {st.ordersCount || 0} HĐ
                             </div>
                           </div>
@@ -2106,13 +2139,13 @@ export default function DashboardDemoPage() {
                       </div>
 
                       {/* Card Action Button */}
-                      <div className="mt-4 pt-3 border-t border-slate-100">
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                         <button
                           onClick={() => {
                             setPosStore(st.id);
                             setActiveTab("pos");
                           }}
-                          className="w-full py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                          className="w-full py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                         >
                           <Barcode className="w-3.5 h-3.5" />
                           <span>Mở POS Thu Ngân Chi Nhánh Này</span>
@@ -2126,11 +2159,11 @@ export default function DashboardDemoPage() {
               {/* Warehouses Section */}
               <div className="pt-2">
                 <div className="mb-3">
-                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
                     <Boxes className="w-4 h-4 text-emerald-600" />
                     <span>Danh Mục {warehouses.length} Kho Hàng Vận Hành Toàn Hệ Thống</span>
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Hệ thống kho đa điểm gồm kho tổng lưu trữ hàng lớn phục vụ sàn Shopee / TikTok Shop và kho vệ tinh tại từng cửa hàng
                   </p>
                 </div>
@@ -2139,35 +2172,35 @@ export default function DashboardDemoPage() {
                   {warehouses.map((wh) => (
                     <div
                       key={wh.id}
-                      className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between"
+                      className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                          <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             {wh.code}
                           </span>
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`px-2 py-0.5 rounded text-xs font-bold ${
                               wh.type === "CENTRAL"
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-blue-100 text-blue-800"
+                                ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+                                : "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
                             }`}
                           >
                             {wh.type === "CENTRAL" ? "Kho Tổng Trung Tâm" : "Kho Tại Cửa Hàng"}
                           </span>
                         </div>
 
-                        <h4 className="font-bold text-slate-900 text-xs mt-2.5 line-clamp-1">
+                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-xs mt-2.5 line-clamp-1">
                           {wh.name}
                         </h4>
 
-                        <div className="flex items-start gap-1.5 mt-2 text-[11px] text-slate-500">
+                        <div className="flex items-start gap-1.5 mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                           <span className="line-clamp-2">{wh.address}</span>
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                         <span className="text-slate-400">Trạng thái:</span>
                         <span className="font-bold text-emerald-600 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
@@ -2188,66 +2221,66 @@ export default function DashboardDemoPage() {
       ======================================================================= */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <span className="font-mono text-xs font-bold text-emerald-600">{selectedOrder.id}</span>
-                <h3 className="font-bold text-base text-slate-900 mt-0.5">Chi Tiết Đơn Hàng</h3>
+                <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 mt-0.5">Chi Tiết Đơn Hàng</h3>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="py-4 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl">
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
                 <div>
-                  <span className="text-slate-400 text-[10px] block">Khách hàng</span>
-                  <strong className="text-slate-900">{selectedOrder.customer}</strong>
-                  <div className="text-slate-500 text-[11px]">{selectedOrder.phone}</div>
+                  <span className="text-slate-400 text-xs block">Khách hàng</span>
+                  <strong className="text-slate-900 dark:text-slate-100">{selectedOrder.customer}</strong>
+                  <div className="text-slate-500 dark:text-slate-400 text-[11px]">{selectedOrder.phone}</div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px] block">Kênh bán & Trạng thái</span>
+                  <span className="text-slate-400 text-xs block">Kênh bán & Trạng thái</span>
                   <strong className="text-emerald-600">{selectedOrder.channelLabel}</strong>
-                  <div className="text-slate-500 text-[11px]">{selectedOrder.statusLabel}</div>
+                  <div className="text-slate-500 dark:text-slate-400 text-[11px]">{selectedOrder.statusLabel}</div>
                 </div>
               </div>
 
               {selectedOrder.address && (
-                <div className="bg-slate-50 p-3 rounded-xl">
-                  <span className="text-slate-400 text-[10px] block">Địa chỉ giao hàng</span>
-                  <span className="text-slate-800 font-medium">{selectedOrder.address}</span>
+                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
+                  <span className="text-slate-400 text-xs block">Địa chỉ giao hàng</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedOrder.address}</span>
                 </div>
               )}
 
               <div>
-                <span className="font-bold text-slate-700 block mb-2">Danh sách sản phẩm xuất kho:</span>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                <span className="font-bold text-slate-700 dark:text-slate-300 block mb-2">Danh sách sản phẩm xuất kho:</span>
+                <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                   {selectedOrder.items.map((it, i) => (
-                    <div key={i} className="p-3 flex items-center justify-between bg-white">
+                    <div key={i} className="p-3 flex items-center justify-between bg-white dark:bg-slate-900">
                       <div>
-                        <div className="font-bold text-slate-900">{it.name}</div>
-                        <div className="text-[10px] font-mono text-slate-400">SKU: {it.sku}</div>
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{it.name}</div>
+                        <div className="text-xs font-mono text-slate-400">SKU: {it.sku}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-900">{it.price.toLocaleString("vi-VN")} ₫</div>
-                        <div className="text-[10px] text-slate-400">Số lượng: x{it.qty}</div>
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{it.price.toLocaleString("vi-VN")} ₫</div>
+                        <div className="text-xs text-slate-400">Số lượng: x{it.qty}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2 text-sm font-bold border-t border-slate-100">
+              <div className="flex items-center justify-between pt-2 text-sm font-bold border-t border-slate-100 dark:border-slate-800">
                 <span>Tổng tiền thanh toán:</span>
                 <span className="text-emerald-600 text-base">{selectedOrder.totalAmount.toLocaleString("vi-VN")} ₫</span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex gap-3">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
               <button
                 onClick={() => {
                   triggerToast(`Đã in phiếu đóng gói cho đơn hàng ${selectedOrder.id}`);
@@ -2260,7 +2293,7 @@ export default function DashboardDemoPage() {
               </button>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
               >
                 Đóng
               </button>
@@ -2274,15 +2307,15 @@ export default function DashboardDemoPage() {
       ======================================================================= */}
       {showTransferModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <ArrowLeftRight className="w-4 h-4 text-emerald-600" />
-                <h3 className="font-bold text-sm text-slate-900">Tạo Phiếu Chuyển Kho Nội Bộ</h3>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Tạo Phiếu Chuyển Kho Nội Bộ</h3>
               </div>
               <button
                 onClick={() => setShowTransferModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2291,11 +2324,11 @@ export default function DashboardDemoPage() {
             <div className="py-4 space-y-4 text-xs">
               {/* Product Select */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Chọn sản phẩm cần chuyển:</label>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Chọn sản phẩm cần chuyển:</label>
                 <select
                   value={transferProductId}
                   onChange={(e) => setTransferProductId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium bg-white focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-900 focus:ring-1 focus:ring-blue-500"
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -2308,19 +2341,19 @@ export default function DashboardDemoPage() {
               {/* Source & Destination Warehouses */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Kho xuất hàng:</label>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Kho xuất hàng:</label>
                   <select
                     value={transferFrom}
                     onChange={(e) => setTransferFrom(e.target.value as "store1" | "store2")}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium bg-white"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-900"
                   >
                     <option value="store1">Kho Chi Nhánh 1 (Q.1)</option>
                     <option value="store2">Kho Chi Nhánh 2 (Bình Thạnh)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Kho nhập hàng:</label>
-                  <div className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-slate-50 text-slate-700">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Kho nhập hàng:</label>
+                  <div className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                     {transferFrom === "store1" ? "Kho Chi Nhánh 2" : "Kho Chi Nhánh 1"}
                   </div>
                 </div>
@@ -2328,19 +2361,19 @@ export default function DashboardDemoPage() {
 
               {/* Transfer Qty */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Số lượng chuyển:</label>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Số lượng chuyển:</label>
                 <input
                   type="number"
                   min="1"
                   max="100"
                   value={transferQty}
                   onChange={(e) => setTransferQty(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex gap-3">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-3">
               <button
                 onClick={handleExecuteTransfer}
                 className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5 shadow-sm"
@@ -2350,7 +2383,7 @@ export default function DashboardDemoPage() {
               </button>
               <button
                 onClick={() => setShowTransferModal(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
               >
                 Hủy
               </button>
@@ -2364,44 +2397,44 @@ export default function DashboardDemoPage() {
       ======================================================================= */}
       {completedReceipt && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 flex flex-col font-mono text-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150 flex flex-col font-mono text-xs">
             {/* Thermal Receipt Header */}
-            <div className="text-center pb-4 border-b-2 border-dashed border-slate-300">
-              <div className="flex items-center justify-center gap-1.5 font-sans font-black text-lg text-slate-900 tracking-tight">
-                <Layers className="w-5 h-5 text-purple-600" />
+            <div className="text-center pb-4 border-b-2 border-dashed border-slate-300 dark:border-slate-600">
+              <div className="flex items-center justify-center gap-1.5 font-sans font-black text-lg text-slate-900 dark:text-slate-100 tracking-tight">
+                <Layers className="w-5 h-5 text-emerald-600" />
                 NEXORA HOME
               </div>
-              <p className="text-[10px] text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-sans mt-0.5">
                 {completedReceipt.channelLabel}
               </p>
-              <p className="text-[10px] text-slate-400 font-sans">
+              <p className="text-xs text-slate-400 font-sans">
                 Hotline: 028 3822 1199 • TP. Hồ Chí Minh
               </p>
-              <div className="text-sm font-black text-slate-800 font-sans mt-2">
+              <div className="text-sm font-black text-slate-800 dark:text-slate-200 font-sans mt-2">
                 HÓA ĐƠN BÁN LẺ
               </div>
-              <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                 Số HĐ: {completedReceipt.id}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
                 Ngày: {new Date().toLocaleDateString("vi-VN")} {new Date().toLocaleTimeString("vi-VN")}
               </div>
             </div>
 
             {/* Receipt Items Table */}
-            <div className="py-3 border-b-2 border-dashed border-slate-300 space-y-2">
-              <div className="text-[10px] font-bold text-slate-500 flex justify-between uppercase">
+            <div className="py-3 border-b-2 border-dashed border-slate-300 dark:border-slate-600 space-y-2">
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex justify-between uppercase">
                 <span>Tên Sản Phẩm</span>
                 <span>T.Tiền</span>
               </div>
               {completedReceipt.items.map((item, idx) => (
                 <div key={idx} className="text-xs">
-                  <div className="font-sans font-bold text-slate-900">{item.name}</div>
-                  <div className="flex justify-between text-slate-500 text-[11px]">
+                  <div className="font-sans font-bold text-slate-900 dark:text-slate-100">{item.name}</div>
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
                     <span>
                       {item.qty} x {item.price.toLocaleString("vi-VN")} ₫
                     </span>
-                    <span className="font-bold text-slate-900">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
                       {(item.qty * item.price).toLocaleString("vi-VN")} ₫
                     </span>
                   </div>
@@ -2410,48 +2443,48 @@ export default function DashboardDemoPage() {
             </div>
 
             {/* Receipt Totals */}
-            <div className="py-3 border-b-2 border-dashed border-slate-300 space-y-1.5 text-xs">
+            <div className="py-3 border-b-2 border-dashed border-slate-300 dark:border-slate-600 space-y-1.5 text-xs">
               {completedReceipt.discountAmount && completedReceipt.discountAmount > 0 && (
                 <div className="flex justify-between text-rose-600">
                   <span>Chiết khấu:</span>
                   <span>-{completedReceipt.discountAmount.toLocaleString("vi-VN")} ₫</span>
                 </div>
               )}
-              <div className="flex justify-between font-black text-sm text-slate-900 pt-1">
+              <div className="flex justify-between font-black text-sm text-slate-900 dark:text-slate-100 pt-1">
                 <span>TỔNG CỘNG:</span>
-                <span className="text-purple-700">{completedReceipt.totalAmount.toLocaleString("vi-VN")} ₫</span>
+                <span className="text-emerald-700 dark:text-emerald-300">{completedReceipt.totalAmount.toLocaleString("vi-VN")} ₫</span>
               </div>
-              <div className="flex justify-between text-[11px] text-slate-500">
+              <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
                 <span>Phương thức:</span>
-                <span className="font-sans font-semibold text-slate-800">{completedReceipt.paymentMethod}</span>
+                <span className="font-sans font-semibold text-slate-800 dark:text-slate-200">{completedReceipt.paymentMethod}</span>
               </div>
             </div>
 
             {/* Receipt Footer */}
-            <div className="text-center pt-4 pb-2 text-[10px] text-slate-500 font-sans">
-              <div className="font-bold text-slate-800">Cảm ơn quý khách và hẹn gặp lại!</div>
+            <div className="text-center pt-4 pb-2 text-xs text-slate-500 dark:text-slate-400 font-sans">
+              <div className="font-bold text-slate-800 dark:text-slate-200">Cảm ơn quý khách và hẹn gặp lại!</div>
               <p className="mt-0.5 text-slate-400">Đổi trả trong 7 ngày nếu lỗi từ nhà sản xuất</p>
               {/* Barcode Graphic */}
               <div className="mt-3 flex flex-col items-center">
-                <Barcode className="w-36 h-10 text-slate-800" />
-                <span className="text-[9px] font-mono tracking-widest">{completedReceipt.id}</span>
+                <Barcode className="w-36 h-10 text-slate-800 dark:text-slate-200" />
+                <span className="text-[11px] font-mono tracking-widest">{completedReceipt.id}</span>
               </div>
             </div>
 
             {/* Print & Close Buttons */}
-            <div className="pt-4 border-t border-slate-200 flex gap-2 font-sans">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex gap-2 font-sans">
               <button
                 onClick={() => {
                   window.print();
                 }}
-                className="flex-1 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 flex items-center justify-center gap-1.5 shadow-sm"
+                className="flex-1 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>In Hóa Đơn</span>
               </button>
               <button
                 onClick={() => setCompletedReceipt(null)}
-                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
               >
                 Đóng
               </button>
@@ -2465,20 +2498,20 @@ export default function DashboardDemoPage() {
       ======================================================================= */}
       {showAddStoreModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">Thêm Chi Nhánh Cửa Hàng Mới</h3>
-                  <p className="text-xs text-slate-500">Khai báo điểm bán vật lý và gắn kho xuất hàng mặc định</p>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Thêm Chi Nhánh Cửa Hàng Mới</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Khai báo điểm bán vật lý và gắn kho xuất hàng mặc định</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAddStoreModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2486,14 +2519,14 @@ export default function DashboardDemoPage() {
 
             <form onSubmit={handleCreateStore} className="py-4 space-y-4 text-xs">
               {addStoreError && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-2">
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                   <span>{addStoreError}</span>
                 </div>
               )}
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Tên Chi Nhánh / Cửa Hàng <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -2502,13 +2535,13 @@ export default function DashboardDemoPage() {
                   placeholder="Ví dụ: Cửa Hàng 3 — Chi nhánh Thủ Đức"
                   value={newStoreForm.name}
                   onChange={(e) => setNewStoreForm({ ...newStoreForm, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Mã Chi Nhánh <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -2517,23 +2550,23 @@ export default function DashboardDemoPage() {
                     placeholder="STORE-HCM-03"
                     value={newStoreForm.code}
                     onChange={(e) => setNewStoreForm({ ...newStoreForm, code: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs uppercase font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Số Điện Thoại Hotline</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số Điện Thoại Hotline</label>
                   <input
                     type="text"
                     placeholder="028 3722 5555"
                     value={newStoreForm.phoneNumber}
                     onChange={(e) => setNewStoreForm({ ...newStoreForm, phoneNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Địa Chỉ Cửa Hàng <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -2542,18 +2575,18 @@ export default function DashboardDemoPage() {
                   placeholder="Ví dụ: 215 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP. HCM"
                   value={newStoreForm.address}
                   onChange={(e) => setNewStoreForm({ ...newStoreForm, address: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Kho Hàng Xuất Mặc Định (POS)
                 </label>
                 <select
                   value={newStoreForm.defaultWarehouseId}
                   onChange={(e) => setNewStoreForm({ ...newStoreForm, defaultWarehouseId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-900"
                 >
                   <option value="">-- Không liên kết kho --</option>
                   {warehouses.map((wh) => (
@@ -2562,16 +2595,16 @@ export default function DashboardDemoPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Khi nhân viên thanh toán tại quầy, hệ thống tự động trừ tồn kho từ kho hàng này.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setShowAddStoreModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-all"
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all"
                 >
                   Hủy Bỏ
                 </button>

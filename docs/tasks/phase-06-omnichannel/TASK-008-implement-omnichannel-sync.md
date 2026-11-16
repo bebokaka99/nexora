@@ -35,3 +35,11 @@ Xây dựng phân hệ quản trị kết nối đa kênh (`channel_connections`
 - [x] API `POST /api/v1/channels/connect` cho phép thêm mới hoặc cập nhật liên kết gian hàng.
 - [x] API `POST /api/v1/channels/:id/sync` kích hoạt đồng bộ thành công và ghi nhận mốc thời gian đồng bộ mới.
 - [x] Giao diện Frontend hiển thị danh sách kênh sàn thật từ backend, có nút "Kết nối kênh mới" và "Đồng bộ ngay".
+
+## 4. Ghi chú cập nhật ngày 16/11/2026 — DONE một phần, cần hoàn thiện trước Phase 07/08
+
+> **Căn cứ kiểm chứng**: Rà soát repo `bebokaka99/nexora` ngày 16/11/2026, commit `08b9602`. Trạng thái `DONE` của nhiệm vụ này được giữ nguyên — phần đã làm (CRUD kết nối kênh, API, giao diện tab "Kênh Bán Hàng") vẫn được ghi nhận. Ghi chú này chỉ bổ sung phạm vi còn thiếu, không sửa trạng thái.
+
+- **Hiện trạng thực tế**: `ChannelService.sync()` chỉ cập nhật mốc thời gian `lastSyncAt` bằng thời gian hiện tại; dữ liệu seed gán sẵn `lastSyncAt` ("1 phút trước", "3 phút trước") mà không qua API sàn nào. Chưa có lời gọi API sàn thật, chưa có BullMQ worker hay Redis đang chạy.
+- **Kết luận**: Phase 06 mới **DONE một phần** — xong lớp quản lý kết nối, chưa xong đồng bộ thật.
+- **Phần còn thiếu** chuyển sang Phase 06.5, `TASK-013: Tích hợp sàn thật — Spike Shopee/TikTok Shop API + BullMQ/Redis Worker`, và phải hoàn thành **trước khi bắt đầu Phase 07/08** (xem điều kiện vào Phase 07/08 tại [PHASES.md](./../PHASES.md)).

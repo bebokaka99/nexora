@@ -63,3 +63,6 @@ redis-data/
 tmp/
 temp/
 *.tmp
+
+# Review screenshots (local only, not in repo)
+screenshots/

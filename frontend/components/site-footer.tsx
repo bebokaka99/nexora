@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, ShieldCheck, Phone, Mail, MapPin } from 'lucide-react';
 
 export function SiteFooter() {
@@ -12,9 +13,11 @@ export function SiteFooter() {
           {/* Column 1: Brand Logo & Business Value */}
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="inline-block">
-              <img
+              <Image
                 src="/logo.png"
                 alt="NEXORA"
+                width={1024}
+                height={572}
                 className="h-10 sm:h-11 w-auto object-contain brightness-110"
               />
             </Link>

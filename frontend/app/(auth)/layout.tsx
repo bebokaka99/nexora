@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from "next/image";
 import {
   ShieldCheck,
   Zap,
@@ -24,9 +25,11 @@ export default function AuthLayout({
       {/* Top Navbar */}
       <header className="px-6 sm:px-8 h-20 flex items-center justify-between border-b border-emerald-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md transition-colors">
         <Link href="/" className="flex items-center group py-2">
-          <img
+          <Image
             src="/logo.png"
             alt="NEXORA"
+            width={1024}
+            height={572}
             className="h-11 sm:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
           />
         </Link>

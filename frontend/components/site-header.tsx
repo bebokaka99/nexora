@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from "next/image";
 import { usePathname } from 'next/navigation';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { DarkModeToggle } from './dark-mode-toggle';
@@ -23,9 +24,11 @@ export function SiteHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo — Noticeably larger as requested */}
         <Link href="/" className="flex items-center group py-2">
-          <img
+          <Image
             src="/logo.png"
             alt="NEXORA"
+            width={1024}
+            height={572}
             className="h-11 sm:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
           />
         </Link>
