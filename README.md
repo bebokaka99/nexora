@@ -75,6 +75,30 @@ Dự án sở hữu kho tài liệu kỹ thuật và nghiệp vụ toàn diện 
 3. Xem tài liệu hướng dẫn bắt đầu tại [`docs/development/ENVIRONMENT_SETUP.md`](./docs/development/ENVIRONMENT_SETUP.md).
 4. Xem nhiệm vụ đầu tiên tại [`docs/tasks/phase-01-foundation/TASK-001-build-nexora-visual-demo.md`](./docs/tasks/phase-01-foundation/TASK-001-build-nexora-visual-demo.md).
 
+### Chạy Bằng Docker (một lệnh, khuyến nghị)
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:4000/api/v1 (Swagger: http://localhost:4000/docs)
+- PostgreSQL 16: localhost:5432 — Redis 7: localhost:6379
+
+Backend tự chạy `prisma migrate deploy` trước khi khởi động. Chi tiết xem
+[`infrastructure/README.md`](./infrastructure/README.md). Các giá trị mặc
+định trong `docker-compose.yml` chỉ dùng cho dev — đổi secret qua `.env` khi
+deploy thật.
+
+### CI — GitHub Actions
+
+Mọi pull request và push lên `main` đều chạy workflow `CI`
+(`.github/workflows/ci.yml`): backend (`npm ci` → `prisma validate` →
+`npm run build`) và frontend (`npm ci` → `npm run build`) trên Node.js 22.
+Workflow báo đỏ khi build lỗi. Lint/test chưa đưa vào CI vì backend chưa có
+script lint/test và frontend chưa có cấu hình ESLint.
+
 ---
 
 ## 5. Bản Quyền & Giấy Phép

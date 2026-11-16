@@ -1,0 +1,69 @@
+# NEXORA — GitHub Actions CI
+#
+# Chạy trên mọi pull request và mọi push lên main.
+# - backend: npm ci → prisma validate → npm run build
+# - frontend: npm ci → npm run build
+#
+# LƯU Ý — lint/test chưa có trong CI vì chưa đủ điều kiện chạy:
+# - backend/package.json KHÔNG CÓ script lint/test → không gọi (gọi sẽ lỗi).
+# - frontend có script `lint` (next lint) nhưng repo KHÔNG CÓ cấu hình ESLint
+#   nên `next lint` sẽ hỏi cấu hình tương tác và lỗi trên CI → chưa đưa vào.
+# Khi bổ sung ESLint config / test thì thêm bước tương ứng vào đây.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (NestJS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Validate Prisma schema
+        working-directory: backend
+        # validate chỉ kiểm tra cú pháp schema, không kết nối DB — nhưng schema
+        # có `url = env("DATABASE_URL")` nên cần đặt giá trị giả để CLI đọc được.
+        env:
+          DATABASE_URL: postgresql://nexora:nexora@localhost:5432/nexora
+        run: npx prisma validate --schema=../database/prisma/schema.prisma
+
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build

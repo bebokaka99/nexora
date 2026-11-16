@@ -1,0 +1,17 @@
+# Docker build context là thư mục gốc của repo (cho backend/Dockerfile).
+# Không đưa node_modules, build output, git hay dữ liệu local vào image.
+.git
+.github
+node_modules
+backend/node_modules
+backend/dist
+frontend/node_modules
+frontend/.next
+frontend/out
+database/node_modules
+*.log
+.env
+.env.local
+screenshots/
+design-system/
+docs/
