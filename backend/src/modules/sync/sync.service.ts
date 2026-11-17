@@ -63,7 +63,12 @@ export class SyncService {
     return {
       jobType: log.jobType,
       status: log.status,
+      // TASK-017: successCount = số đơn đã lưu MỚI (pull-orders) hoặc số
+      // variant đẩy tồn thành công (sync-inventory); pulledCount/skippedCount
+      // chỉ có ý nghĩa với job pull-orders (job sync-inventory để 0).
+      pulledCount: log.pulledCount,
       successCount: log.successCount,
+      skippedCount: log.skippedCount,
       failureCount: log.failureCount,
       errorMessage: log.errorMessage,
       startedAt: log.startedAt,

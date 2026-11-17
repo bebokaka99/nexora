@@ -4,35 +4,51 @@ import { PrismaService } from '../../database/prisma.service';
 import { CHANNEL_SYNC_QUEUE, ChannelSyncJobData, redisConnectionOptions } from './sync.queue';
 import { ShopeeClient, shopeeConfigFromEnv } from '../channel/shopee.client';
 import { TikTokClient, tikTokConfigFromEnv } from '../channel/tiktok.client';
+import { decryptToken, encryptToken } from './token-crypto';
+import {
+  normalizeShopeeOrderDetail,
+  normalizeTikTokOrder,
+} from './order-mapper';
+import { MarketplaceOrderImporter } from './marketplace-order-importer';
 
 /**
- * SyncProcessor — BullMQ worker đồng bộ sàn thật (TASK-013).
+ * SyncProcessor — BullMQ worker đồng bộ sàn thật (TASK-013, củng cố TASK-017).
  *
  * Chạy trên Redis thật (REDIS_URL). Mỗi job:
  *   1. Tạo SyncLog PENDING → RUNNING.
- *   2. Nạp ChannelConnection; refresh token nếu sắp hết hạn (Shopee 4h,
- *      TikTok 7 ngày) và lưu token mới vào DB ngay.
+ *   2. Nạp ChannelConnection; giải mã token (TASK-017 — token trong DB luôn
+ *      ở dạng mã hóa AES-256-GCM, chỉ giải mã trong bộ nhớ khi gọi API);
+ *      refresh token nếu sắp hết hạn (Shopee 4h, TikTok 7 ngày) và lưu token
+ *      mới ĐÃ MÃ HÓA vào DB ngay.
  *   3. sync-inventory: đọc tồn kho NEXORA (Inventory.availableQty) rồi đẩy
  *      lên sàn qua client.updateStock — CHỈ cho variant đã có
  *      ChannelProductMapping; variant chưa map được đếm vào failure_count
  *      (không đoán item sàn).
- *   4. pull-orders: kéo đơn từ sàn trong 24h gần nhất, đếm số đơn.
- *      ⚠️ Đơn kéo về CHƯA được lưu vào bảng orders của NEXORA trong spike
- *      này (cần map external_order_id + SKU sàn ↔ variant; xem SPIKE §3/§5).
- *      Job chỉ chứng minh được "kéo đơn thật thành công" và ghi SyncLog.
- *   5. Ghi SyncLog SUCCESS / PARTIAL / FAILED. CHỈ khi SUCCESS mới cập nhật
+ *   4. pull-orders (TASK-017): kéo đơn từ sàn trong 24h gần nhất, lấy chi
+ *      tiết từng đơn (Shopee: getOrderDetail theo lô 50; TikTok: line_items
+ *      trong kết quả search), chuẩn hóa rồi lưu vào bảng orders qua
+ *      MarketplaceOrderImporter — idempotent theo (tenant, kênh,
+ *      externalOrderId): kéo lại lần 2 không tạo đơn trùng. Đơn không map
+ *      được SKU thì không lưu, đếm lỗi (không đoán variant).
+ *   5. Ghi SyncLog SUCCESS / PARTIAL / FAILED với đủ 4 số
+ *      pulled/saved/skipped/errors. CHỈ khi SUCCESS mới cập nhật
  *      ChannelConnection.lastSyncAt — đúng tiêu chí nghiệm thu TASK-013.
  *
  * Chưa có Redis → Worker phát lỗi 'error', job không chạy; lỗi được log rõ,
  * không giả vờ thành công. Chưa có key sàn → client throw lỗi credential
  * rõ ràng trước khi gọi mạng, job fail với message đó trong SyncLog.
+ * Thiếu SYNC_TOKEN_ENCRYPTION_KEY → job fail với lỗi rõ ràng (TASK-017),
+ * không đọc/ghi token plaintext.
  */
 @Injectable()
 export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SyncProcessor.name);
   private worker: Worker<ChannelSyncJobData> | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly orderImporter: MarketplaceOrderImporter,
+  ) {}
 
   onModuleInit() {
     this.worker = new Worker<ChannelSyncJobData>(
@@ -79,15 +95,31 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
     });
 
     try {
-      const channel = await this.prisma.channelConnection.findFirst({
+      const stored = await this.prisma.channelConnection.findFirst({
         where: { id: channelId, tenantId },
       });
-      if (!channel) throw new Error(`Không tìm thấy kênh [${channelId}] của tenant.`);
-      if (channel.status !== 'CONNECTED') {
-        throw new Error(`Kênh [${channel.accountName}] đang ở trạng thái ${channel.status}, không đồng bộ.`);
+      if (!stored) throw new Error(`Không tìm thấy kênh [${channelId}] của tenant.`);
+      if (stored.status !== 'CONNECTED') {
+        throw new Error(`Kênh [${stored.accountName}] đang ở trạng thái ${stored.status}, không đồng bộ.`);
       }
+      // TASK-017: giải mã token 1 lần tại đây. Token trong DB luôn ở dạng
+      // mã hóa AES-256-GCM; mọi code phía dưới chỉ thấy token đã giải mã
+      // trong bộ nhớ (không bao giờ log token). Thiếu khóa mã hóa, sai khóa,
+      // hoặc token plaintext cũ → decryptToken() throw lỗi rõ ràng và job
+      // fail với message đó trong SyncLog.
+      const channel = {
+        ...stored,
+        accessToken: decryptToken(stored.accessToken),
+        refreshToken: decryptToken(stored.refreshToken),
+      };
 
-      let result: { successCount: number; failureCount: number; note?: string };
+      let result: {
+        successCount: number;
+        failureCount: number;
+        pulledCount?: number;
+        skippedCount?: number;
+        note?: string;
+      };
       if (job.name === 'sync-inventory') {
         result = await this.syncInventory(channel, channelType);
       } else if (job.name === 'pull-orders') {
@@ -101,7 +133,12 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
         where: { id: log.id },
         data: {
           status,
+          // TASK-017: successCount = số đơn lưu MỚI (pull-orders) / số
+          // variant đẩy tồn thành công (sync-inventory); pulledCount và
+          // skippedCount chỉ có ý nghĩa với pull-orders.
+          pulledCount: result.pulledCount ?? 0,
           successCount: result.successCount,
+          skippedCount: result.skippedCount ?? 0,
           failureCount: result.failureCount,
           errorMessage: result.note ?? null,
           finishedAt: new Date(),
@@ -148,13 +185,14 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
       channel.tokenExpiresAt.getTime() - Date.now() < 5 * 60 * 1000;
     if (expiresSoon) {
       // Shopee: refresh token rotating — ghi cả 2 token mới trong 1 lần update.
+      // TASK-017: mã hóa trước khi ghi vào DB (không lưu plaintext).
       const pair = await client.refreshAccessToken(channel.refreshToken, channel.accountId);
       accessToken = pair.accessToken;
       await this.prisma.channelConnection.update({
         where: { id: channel.id },
         data: {
-          accessToken: pair.accessToken,
-          refreshToken: pair.refreshToken,
+          accessToken: encryptToken(pair.accessToken),
+          refreshToken: encryptToken(pair.refreshToken),
           tokenExpiresAt: new Date(Date.now() + pair.expireIn * 1000),
         },
       });
@@ -182,13 +220,14 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
       !channel.tokenExpiresAt ||
       channel.tokenExpiresAt.getTime() - Date.now() < 5 * 60 * 1000;
     if (expiresSoon) {
+      // TASK-017: mã hóa trước khi ghi vào DB (không lưu plaintext).
       const pair = await client.refreshAccessToken(channel.refreshToken);
       accessToken = pair.accessToken;
       await this.prisma.channelConnection.update({
         where: { id: channel.id },
         data: {
-          accessToken: pair.accessToken,
-          refreshToken: pair.refreshToken,
+          accessToken: encryptToken(pair.accessToken),
+          refreshToken: encryptToken(pair.refreshToken),
           tokenExpiresAt: new Date(pair.accessTokenExpireIn * 1000),
         },
       });
@@ -299,23 +338,40 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
   }
 
   // ---------------------------------------------------------------------------
-  // Job: pull-orders — sàn → NEXORA (spike: chỉ kéo + đếm, chưa lưu orders)
+  // Job: pull-orders — sàn → NEXORA (TASK-017: lưu đơn về bảng orders).
+  //
+  // Luồng: kéo danh sách đơn trong khoảng thời gian → lấy chi tiết từng đơn
+  // (Shopee: getOrderDetail theo lô 50 mã; TikTok: line_items đã có trong
+  // kết quả search) → chuẩn hóa (order-mapper) → lưu qua
+  // MarketplaceOrderImporter (idempotent theo (tenant, kênh,
+  // externalOrderId): kéo lại lần 2 không tạo đơn trùng).
+  // successCount ở đây = số đơn lưu MỚI (ghi vào SyncLog.successCount).
   // ---------------------------------------------------------------------------
 
   private async pullOrders(
     channel: { id: string; tenantId: string; accountId: string; accessToken: string | null; refreshToken: string | null; tokenExpiresAt: Date | null },
     channelType: string,
     sinceHours: number,
-  ): Promise<{ successCount: number; failureCount: number; note?: string }> {
+  ): Promise<{
+    successCount: number;
+    failureCount: number;
+    pulledCount: number;
+    skippedCount: number;
+    note?: string;
+  }> {
     if (channelType !== 'SHOPEE' && channelType !== 'TIKTOK_SHOP') {
       throw new Error(`Kênh ${channelType} chưa hỗ trợ kéo đơn hàng (chỉ SHOPEE và TIKTOK_SHOP).`);
     }
     const nowSec = Math.floor(Date.now() / 1000);
     const fromSec = nowSec - sinceHours * 3600;
-    let count = 0;
+
+    let imported: { pulled: number; saved: number; skipped: number; errors: number; errorNotes: string[] };
+    let listedCount = 0;
 
     if (channelType === 'SHOPEE') {
       const { client, accessToken, shopId } = await this.ensureShopeeToken(channel);
+      // 1. Kéo danh sách order_sn theo trang (cursor).
+      const orderSnList: string[] = [];
       let cursor = '';
       do {
         const page = await client.getOrders(accessToken, shopId, {
@@ -323,13 +379,28 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
           timeTo: nowSec,
           cursor,
         });
-        count += page.orders.length;
+        orderSnList.push(...page.orders.map((o) => o.order_sn));
         cursor = page.nextCursor;
         if (!page.more) break;
       } while (cursor);
+      listedCount = orderSnList.length;
+      // 2. Lấy chi tiết theo lô 50 mã (giới hạn Shopee).
+      const details: import('../channel/shopee.client').ShopeeOrderDetail[] = [];
+      for (let i = 0; i < orderSnList.length; i += 50) {
+        const chunk = orderSnList.slice(i, i + 50);
+        details.push(...(await client.getOrderDetail(accessToken, shopId, chunk)));
+      }
+      // 3. Chuẩn hóa + lưu (dedup trong importer).
+      imported = await this.orderImporter.importOrders({
+        tenantId: channel.tenantId,
+        channelType: 'SHOPEE',
+        orders: details.map(normalizeShopeeOrderDetail),
+      });
     } else {
       const { client, accessToken } = await this.ensureTikTokToken(channel);
       const shopCipher = await this.getTikTokShopCipher(client, accessToken, channel.accountId);
+      // TikTok: kết quả search đã kèm line_items nên chuẩn hóa trực tiếp.
+      const normalized: import('./order-mapper').NormalizedMarketplaceOrder[] = [];
       let pageToken = '';
       do {
         const page = await client.getOrders(accessToken, shopCipher, {
@@ -337,19 +408,33 @@ export class SyncProcessor implements OnModuleInit, OnModuleDestroy {
           createTimeLt: nowSec,
           pageToken,
         });
-        count += page.orders.length;
+        normalized.push(...page.orders.map(normalizeTikTokOrder));
         pageToken = page.nextPageToken;
         if (!pageToken) break;
       } while (pageToken);
+      listedCount = normalized.length;
+      imported = await this.orderImporter.importOrders({
+        tenantId: channel.tenantId,
+        channelType: 'TIKTOK_SHOP',
+        orders: normalized,
+      });
     }
 
-    // TODO (bản hoàn thiện TASK-013): lưu đơn kéo về vào bảng orders của
-    // NEXORA (map external_order_id + SKU sàn ↔ variant). Hiện tại job chỉ
-    // chứng minh kéo đơn thật thành công và ghi số lượng vào SyncLog.
-    this.logger.warn(
-      `pull-orders kênh [${channel.accountId}]: kéo được ${count} đơn trong ${sinceHours}h qua — ` +
-        'CHƯA lưu vào bảng orders (cần map SKU, xem SPIKE §3).',
-    );
-    return { successCount: count, failureCount: 0 };
+    const detailGap =
+      listedCount > imported.pulled
+        ? ` (danh sách trả ${listedCount} đơn nhưng chỉ lấy được chi tiết ${imported.pulled} đơn)`
+        : '';
+    const note =
+      `pull-orders: kéo ${imported.pulled} đơn${detailGap}, lưu mới ${imported.saved}, ` +
+      `trùng bỏ qua ${imported.skipped}, lỗi ${imported.errors}` +
+      (imported.errorNotes.length > 0 ? ` — ${imported.errorNotes.join(' | ')}` : '');
+    this.logger.log(`pull-orders kênh [${channel.accountId}]: ${note}`);
+    return {
+      successCount: imported.saved,
+      failureCount: imported.errors,
+      pulledCount: imported.pulled,
+      skippedCount: imported.skipped,
+      note,
+    };
   }
 }

@@ -413,6 +413,11 @@ model Order {
   items           OrderItem[]
 
   @@unique([tenantId, orderNumber])
+  // TASK-017: chống lưu trùng đơn sàn khi job pull-orders chạy lại (hoặc 2
+  // worker cùng lưu 1 đơn): 1 đơn ngoại vi chỉ có 1 bản ghi cho mỗi
+  // (tenant, kênh). Postgres coi NULL là khác nhau nên đơn POS (không có
+  // externalOrderId) không bị ảnh hưởng.
+  @@unique([tenantId, channelType, externalOrderId])
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
   @@map("orders")
@@ -476,6 +481,10 @@ model ChannelConnection {
   // TASK-013: token OAuth của sàn (lưu tạm plaintext — TODO: mã hóa at-rest
   // trước khi production, xem SPIKE-shopee-tiktok.md §5). access_token của
   // Shopee chỉ sống 4 giờ, TikTok 7 ngày; refresh_token dùng để tự refresh.
+  // TASK-017: token đã mã hóa AES-256-GCM at-rest (token-crypto.ts, khóa từ
+  // env SYNC_TOKEN_ENCRYPTION_KEY); giá trị trong 2 cột này luôn có dạng
+  // "v1:..." — đọc phải qua decryptToken(), ghi phải qua encryptToken().
+  // Token plaintext cũ (không có prefix v1:) bị từ chối, phải ủy quyền lại.
   accessToken    String?   @map("access_token") @db.Text
   refreshToken   String?   @map("refresh_token") @db.Text
   tokenExpiresAt DateTime? @map("token_expires_at")
@@ -503,6 +512,12 @@ model SyncLog {
   status        SyncStatus  @default(PENDING)
   successCount  Int         @default(0) @map("success_count")
   failureCount  Int         @default(0) @map("failure_count")
+  // TASK-017: số liệu chi tiết cho job pull-orders (processor ghi).
+  // successCount = số đơn đã lưu MỚI; pulledCount = tổng số đơn kéo về;
+  // skippedCount = số đơn trùng đã có (bỏ qua tạo mới); failureCount =
+  // số đơn lỗi (không map được SKU / không có mặt hàng / lỗi DB).
+  pulledCount   Int         @default(0) @map("pulled_count")
+  skippedCount  Int         @default(0) @map("skipped_count")
   errorMessage  String?     @map("error_message") @db.Text
   startedAt     DateTime?   @map("started_at")
   finishedAt    DateTime?   @map("finished_at")

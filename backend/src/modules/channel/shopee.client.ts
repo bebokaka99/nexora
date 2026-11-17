@@ -51,6 +51,36 @@ export interface ShopeeOrderItem {
   [key: string]: unknown;
 }
 
+/** Chi tiết 1 đơn Shopee (GET /api/v2/order/get_order_detail). */
+export interface ShopeeOrderDetailItem {
+  item_id: number;
+  item_name?: string;
+  model_id?: number;
+  model_name?: string;
+  /** SKU phân loại — khóa để resolve variant NEXORA (TASK-016/017). */
+  model_sku?: string;
+  model_quantity_purchased?: number;
+  model_discounted_price?: number;
+  model_original_price?: number;
+  [key: string]: unknown;
+}
+
+export interface ShopeeOrderDetail {
+  order_sn: string;
+  order_status?: string;
+  create_time?: number;
+  update_time?: number;
+  total_amount?: number;
+  item_list?: ShopeeOrderDetailItem[];
+  recipient_address?: {
+    name?: string;
+    phone?: string;
+    full_address?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 export class ShopeeCredentialsError extends Error {
   constructor(message: string) {
     super(`[Shopee] ${message}`);
@@ -280,6 +310,35 @@ export class ShopeeClient {
       nextCursor: res.next_cursor ?? '',
       more: res.more ?? false,
     };
+  }
+
+  /**
+   * Chi tiết đơn theo danh sách order_sn (TASK-017).
+   * Shopee giới hạn tối đa 50 mã/lần gọi — caller tự chia lô. Trả về
+   * `order_list` kèm `item_list` + `recipient_address` (xin qua
+   * `response_optional_fields`). Endpoint/chưa đối chiếu docs chính thức
+   * (xem SPIKE §1.4); field thiếu thì client để undefined, mapper xử lý.
+   */
+  async getOrderDetail(
+    accessToken: string,
+    shopId: string | number,
+    orderSnList: string[],
+  ): Promise<ShopeeOrderDetail[]> {
+    if (orderSnList.length === 0) return [];
+    if (orderSnList.length > 50) {
+      throw new ShopeeApiError('getOrderDetail tối đa 50 order_sn/lần gọi (giới hạn Shopee).');
+    }
+    const res = await this.shopCall<{ order_list: ShopeeOrderDetail[] }>(
+      'GET',
+      '/api/v2/order/get_order_detail',
+      accessToken,
+      shopId,
+      {
+        order_sn_list: JSON.stringify(orderSnList),
+        response_optional_fields: 'item_list,recipient_address',
+      },
+    );
+    return res.order_list ?? [];
   }
 
   /**

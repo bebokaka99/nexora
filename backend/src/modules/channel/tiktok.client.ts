@@ -70,6 +70,30 @@ export interface TikTokOrderItem {
   create_time?: number;
   update_time?: number;
   payment?: { total_amount?: string; currency?: string };
+  /**
+   * TASK-017: mặt hàng trong đơn (trả kèm trong orders/search, contract
+   * 202309 — chưa đối chiếu sandbox). `seller_sku` là khóa để resolve
+   * variant NEXORA; thiếu thì fallback `sku_id`.
+   */
+  line_items?: Array<{
+    id?: string;
+    product_id?: string;
+    sku_id?: string;
+    seller_sku?: string;
+    product_name?: string;
+    sku_name?: string;
+    quantity?: number;
+    sale_price?: string;
+    [key: string]: unknown;
+  }>;
+  recipient_address?: {
+    name?: string;
+    phone?: string;
+    full_address?: string;
+    [key: string]: unknown;
+  };
+  /** Đơn bị giữ 1 giờ sau thanh toán (từ Q1/2026, SPIKE §2.1). */
+  is_on_hold_order?: boolean;
   [key: string]: unknown;
 }
 
