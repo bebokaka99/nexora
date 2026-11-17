@@ -195,13 +195,24 @@ export class OrderService {
    *   'store1' không có trong DB) thì lấy kho active đầu tiên của tenant.
    * - Tenant chưa có kho active nào thì throw BadRequestException với
    *   thông báo rõ ràng, thay vì để reserveOrDeductStock / FK lỗi khó hiểu.
+   * TASK-016: warehouseId gửi lên mà không tồn tại cho tenant thì cũng bỏ
+   * qua và đi tiếp chuỗi fallback, thay vì để FK lỗi ở lúc tạo đơn.
    */
   private async resolveWarehouseId(
     tenantId: string,
     warehouseId?: string | null,
     storeId?: string | null,
   ): Promise<string> {
-    if (warehouseId) return warehouseId;
+    if (warehouseId) {
+      const wh = await this.prisma.warehouse.findFirst({
+        where: { tenantId, id: warehouseId },
+        select: { id: true },
+      });
+      if (wh) return warehouseId;
+      this.logger.warn(
+        `warehouseId "${warehouseId}" không tồn tại cho tenant — bỏ qua và resolve kho theo chuỗi fallback.`,
+      );
+    }
 
     if (storeId) {
       const store = await this.prisma.store.findFirst({
@@ -220,6 +231,40 @@ export class OrderService {
 
     throw new BadRequestException(
       'Tenant chưa có kho hàng active nào để xuất kho. Vui lòng tạo kho trước khi tạo đơn hàng.',
+    );
+  }
+
+  /**
+   * TASK-016 (hướng (b) — backend resolve biến thể theo SKU, thay vì hướng
+   * (a) POS load sản phẩm thật): POS gửi `variantId` là id mock của frontend
+   * (PROD-01…) và `sku` thật của sản phẩm; backend tra biến thể thật theo
+   * thứ tự id → sku (sku unique theo tenant). Hướng (a) không chọn vì: POS
+   * phải thay toàn bộ danh mục mock 12 sản phẩm (có ảnh, tồn theo chi nhánh)
+   * bằng tối đa 3 sản phẩm seed (không ảnh, không tồn theo chi nhánh trong
+   * FE), chạm tới cả tab Sản phẩm/Tồn kho, và không kiểm chứng được trong VM
+   * (không có Postgres). Giới hạn còn lại: SKU mock (vd NCKD-TF-56L) không có
+   * trong DB seed (NCKD-55L-001…) thì vẫn lỗi rõ ràng ở dưới — muốn e2e tới
+   * cùng, danh mục trong DB phải có đúng SKU mà quầy đang bán.
+   */
+  private async resolveVariantId(
+    tenantId: string,
+    variantId: string,
+    sku: string,
+  ): Promise<string> {
+    const byId = await this.prisma.productVariant.findFirst({
+      where: { tenantId, id: variantId },
+      select: { id: true },
+    });
+    if (byId) return byId.id;
+
+    const bySku = await this.prisma.productVariant.findFirst({
+      where: { tenantId, sku },
+      select: { id: true },
+    });
+    if (bySku) return bySku.id;
+
+    throw new BadRequestException(
+      `Không tìm thấy biến thể sản phẩm với SKU "${sku}". Vui lòng đồng bộ danh mục sản phẩm (tạo sản phẩm + biến thể với đúng SKU) trước khi bán tại quầy.`,
     );
   }
 
@@ -243,17 +288,47 @@ export class OrderService {
     const prefix = isPos ? 'POS' : channel === ChannelTypeEnum.SHOPEE ? 'ORD-SP' : channel === ChannelTypeEnum.TIKTOK_SHOP ? 'ORD-TT' : 'ORD-FB';
     const orderNumber = `${prefix}-${orderSeq}`;
 
+    // TASK-016: storeId lạ (id mock cũ như 'store-001-q1', hoặc store đã xóa)
+    // thì bỏ qua thay vì để FK lỗi ở lúc tạo đơn — kho đã có fallback theo
+    // TASK-015 nên đơn vẫn xuất được kho đúng của tenant.
+    let effectiveStoreId = dto.storeId;
+    if (effectiveStoreId) {
+      const storeExists = await this.prisma.store.findFirst({
+        where: { tenantId, id: effectiveStoreId },
+        select: { id: true },
+      });
+      if (!storeExists) {
+        this.logger.warn(
+          `storeId "${effectiveStoreId}" không tồn tại cho tenant — bỏ qua storeId khi tạo đơn.`,
+        );
+        effectiveStoreId = undefined;
+      }
+    }
+
     // Xác định kho hàng xử lý (TASK-015): không dùng ID hardcode nữa.
     // Thứ tự: kho DTO gửi lên -> kho mặc định của cửa hàng -> kho active
     // đầu tiên của tenant. Không có kho nào thì lỗi rõ ràng thay vì lỗi FK.
     const warehouseId = await this.resolveWarehouseId(
       tenantId,
       dto.warehouseId,
-      dto.storeId,
+      effectiveStoreId,
     );
 
-    // 1. Áp dụng quy tắc tồn kho tương ứng
+    // TASK-016 (hướng (b)): resolve từng mặt hàng về variant uuid thật
+    // (theo id rồi theo sku) TRƯỚC khi trừ tồn và tạo đơn, vì OrderItem
+    // .variantId là FK tới ProductVariant — id mock PROD-01… sẽ lỗi FK.
+    const resolvedItems = [];
     for (const item of dto.items) {
+      const realVariantId = await this.resolveVariantId(
+        tenantId,
+        item.variantId,
+        item.sku,
+      );
+      resolvedItems.push({ ...item, variantId: realVariantId });
+    }
+
+    // 1. Áp dụng quy tắc tồn kho tương ứng
+    for (const item of resolvedItems) {
       if (isPos && initialStatus === OrderStatusEnum.COMPLETED) {
         // BR-ORD-001: Trừ thẳng tồn kho On-hand & Available
         await this.inventoryService.reserveOrDeductStock(tenantId, {
@@ -271,7 +346,7 @@ export class OrderService {
         orderNumber,
         channelType: channel as any,
         externalOrderId: dto.externalOrderId,
-        storeId: dto.storeId,
+        storeId: effectiveStoreId,
         warehouseId,
         subtotal,
         discountAmount: discount,
@@ -280,7 +355,7 @@ export class OrderService {
         paymentStatus: initialPaymentStatus as any,
         paymentMethod: dto.paymentMethod || (isPos ? 'Tiền mặt' : 'COD'),
         items: {
-          create: dto.items.map((i) => ({
+          create: resolvedItems.map((i) => ({
             tenantId,
             variantId: i.variantId,
             sku: i.sku,

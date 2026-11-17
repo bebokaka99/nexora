@@ -23,6 +23,7 @@ export function PosCartPanel({ pos }: { pos: PosApi }) {
       cartDiscountAmount,
       cartTotalAmount,
       cartChangeDue,
+      isCheckingOut,
       handleCompletePosCheckout,
     } = pos;
 
@@ -273,18 +274,24 @@ export function PosCartPanel({ pos }: { pos: PosApi }) {
           </div>
         </div>
 
-        {/* Complete Checkout Button */}
+        {/* Complete Checkout Button — TASK-016: khóa khi đang gọi API để
+            tránh bấm 2 lần tạo 2 đơn; backend down thì nút vẫn bấm được để
+            hiện lỗi chặn cứng (phương án A), giỏ giữ nguyên. */}
         <Button
           onClick={handleCompletePosCheckout}
-          disabled={posCart.length === 0}
+          disabled={posCart.length === 0 || isCheckingOut}
           className={`w-full mt-4 py-3 shadow-emerald-500/25 active:scale-95 ${
-                            posCart.length === 0
+                            posCart.length === 0 || isCheckingOut
                               ? "bg-slate-200 dark:bg-slate-700 text-slate-400"
                               : ""
                           }`}
         >
           <Receipt className="w-4 h-4" />
-          <span>Thanh Toán & In Hóa Đơn ({cartTotalAmount.toLocaleString("vi-VN")} ₫)</span>
+          <span>
+            {isCheckingOut
+              ? "Đang xử lý thanh toán..."
+              : `Thanh Toán & In Hóa Đơn (${cartTotalAmount.toLocaleString("vi-VN")} ₫)`}
+          </span>
                         </Button>
       </div>
     </div>

@@ -5,12 +5,19 @@
 // trả profile giả, đồng thời seed token + user/tenant cache vào localStorage TRƯỚC khi
 // page load — chỉ là dữ liệu giả trong trình duyệt chụp, KHÔNG sửa code FE.
 // Kết quả: screenshots/dashboard-click-*.png + in bảng PASS/FAIL ra stdout.
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 
 const BASE = "http://localhost:3000";
 const SHOT_DIR = (process.env.CLICK_SHOT_DIR || new URL("../../screenshots/", import.meta.url).pathname).replace(/\/?$/, "/");
-const CHROME = "/usr/bin/google-chrome";
+const PLAYWRIGHT_CHROME = `${process.env.HOME}/.cache/ms-playwright/chromium-1255/chrome-linux64/chrome`;
+// Thứ tự ưu tiên: CHROME_BIN > google-chrome hệ thống > chromium stock của
+// Playwright (không bị Hatch WebGL policy / LNA chặn) > meta-chromium.
+const CHROME = process.env.CHROME_BIN
+  || (existsSync("/usr/bin/google-chrome") ? "/usr/bin/google-chrome"
+    : existsSync(PLAYWRIGHT_CHROME) ? PLAYWRIGHT_CHROME : "/opt/meta-chromium/chrome");
+const IS_HATCH_CHROME = CHROME.includes("meta-chromium");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const FAKE_PROFILE = {
@@ -93,9 +100,24 @@ function record(name, ok, detail = "") { results.push({ name, ok, detail }); con
 
 async function main() {
   mkdirSync(SHOT_DIR, { recursive: true });
-  const chrome = spawn(CHROME, ["--headless=new", "--remote-debugging-port=9222", "--no-sandbox",
+  // Chrome Hatch (meta-chromium) yêu cầu WebGL domain policy mới khởi động
+  // được: file contract + SHA-256 của file. Nằm ngoài NEXORA, chỉ để chạy
+  // headless Chrome trong VM này (dashboard không dùng WebGL).
+  const POLICY_FILE = process.env.HATCH_WEBGL_POLICY_FILE || "/tmp/shot/webgl-domains.txt";
+  const chromeArgs = ["--headless=new", "--remote-debugging-port=9222", "--no-sandbox",
     "--disable-gpu", "--hide-scrollbars", "--user-data-dir=/tmp/shot-profile",
-    "--window-size=1440,900", "about:blank"], { stdio: "ignore" });
+    "--window-size=1440,900",
+    // Chrome 157 chặn điều hướng từ about:blank sang localhost (Local
+    // Network Access checks) — tắt check này cho test local.
+    "--disable-features=LocalNetworkAccessChecks"];
+  if (IS_HATCH_CHROME) {
+    if (!existsSync(POLICY_FILE)) writeFileSync(POLICY_FILE, "hatch-webgl-allowed-domains-v1\nexample.com\n");
+    const POLICY_SHA = createHash("sha256").update(readFileSync(POLICY_FILE)).digest("hex");
+    chromeArgs.push(
+      `--hatch-webgl-allowed-domains-file=${POLICY_FILE}`,
+      `--hatch-webgl-allowed-domains-sha256=${POLICY_SHA}`);
+  }
+  const chrome = spawn(CHROME, [...chromeArgs, "about:blank"], { stdio: "ignore" });
   try {
     let version;
     for (let i = 0; i < 30; i++) { try { version = await (await fetch("http://127.0.0.1:9222/json/version")).json(); break; } catch { await sleep(500); } }
@@ -172,6 +194,28 @@ async function main() {
       `SP: ${(firstProduct || "?").slice(0, 90)} | giỏ trước: trống=${cartBefore.empty}, tổng=${cartBefore.total} | sau: trống=${cartAfter.empty}, tổng=${cartAfter.total} ₫` + (r.ok ? "" : " | " + r.reason));
     await cdp.shot("dashboard-click-pos.png");
 
+    // --- 3b. TASK-016 (phương án A): bấm Thanh toán khi backend down ---
+    // Backend cổng 4000 KHÔNG chạy: POST /orders lỗi kết nối, POS phải chặn
+    // cứng — toast lỗi đỏ, giỏ giữ nguyên món + tổng tiền, không mở hóa đơn,
+    // không sinh đơn giả, không trừ tồn local.
+    const cartBeforeCheckout = await cdp.eval(`(() => { const t = document.body.innerText;
+      const cart = t.match(/GIỎ HÀNG QUẦY \\((\\d+)\\)/); const total = t.match(/Tổng Thanh Toán:\\s*([\\d.]+)\\s*₫/);
+      return { count: cart ? cart[1] : null, total: total ? total[1] : null }; })()`);
+    r = await cdp.clickByJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes('Thanh Toán & In Hóa Đơn'))`, "nút Thanh Toán & In Hóa Đơn");
+    await sleep(2500);
+    const blocked = await cdp.eval(`(() => { const t = document.body.innerText;
+      const cart = t.match(/GIỎ HÀNG QUẦY \\((\\d+)\\)/); const total = t.match(/Tổng Thanh Toán:\\s*([\\d.]+)\\s*₫/);
+      return { toast: t.includes('Không thể kết nối') && t.includes('giỏ hàng vẫn giữ nguyên'),
+        toastText: (t.match(/Không thể kết nối[^\\n]*/) || [null])[0],
+        receiptOpen: t.includes('HÓA ĐƠN BÁN LẺ'),
+        count: cart ? cart[1] : null, total: total ? total[1] : null }; })()`);
+    const blockedOk = r.ok && blocked.toast && !blocked.receiptOpen
+      && blocked.count === cartBeforeCheckout.count && blocked.total === cartBeforeCheckout.total;
+    record("TASK-016 (A): backend down -> chặn checkout, giữ giỏ, không tạo đơn", blockedOk,
+      `trước: ${cartBeforeCheckout.count} món, ${cartBeforeCheckout.total} ₫ | sau: ${blocked.count} món, ${blocked.total} ₫ | toast lỗi: ${blocked.toast ? "có" : "KHÔNG"} | hóa đơn mở: ${blocked.receiptOpen ? "CÓ (sai)" : "không"} | toast: ${(blocked.toastText || "?").slice(0, 140)}` + (r.ok ? "" : " | " + r.reason));
+    await cdp.shot("dashboard-pos-blocked.png");
+    await sleep(1000);
+
     // --- 4. Chuyển tab Đơn hàng + mở drawer chi tiết ---
     r = await cdp.clickByJs(`[...document.querySelectorAll('aside nav button')].find(b => b.textContent.includes('Đơn Hàng Đa Kênh'))`, "tab Đơn hàng");
     try { await cdp.waitFor(`document.querySelector('button[title="Xem chi tiết"]') !== null`, 8000, "bảng đơn hàng"); record("Chuyển tab POS → Đơn hàng", r.ok, r.detail || r.reason); }
@@ -181,6 +225,9 @@ async function main() {
     r = await cdp.clickByJs(`document.querySelector('button[title="Xem chi tiết"]')`, "nút Xem chi tiết đơn đầu tiên");
     try { await cdp.waitFor(`document.body.innerText.includes('Chi Tiết Đơn Hàng')`, 8000, "drawer chi tiết đơn"); record("Đơn hàng: mở drawer chi tiết 1 đơn", r.ok, `đơn: ${(firstOrder || "?").slice(0, 100)}` + (r.ok ? "" : " | " + r.reason)); }
     catch (e) { record("Đơn hàng: mở drawer chi tiết 1 đơn", false, (r.reason || "") + " | " + e.message); }
+    // TASK-016 (A): đơn đầu tiên vẫn là đơn mock cũ ORD-SP-9821 — checkout bị
+    // chặn ở bước 3b không được prepend đơn giả nào vào đầu danh sách.
+    record("TASK-016 (A): không có đơn giả mới trong tab Đơn hàng", (firstOrder || "").includes("ORD-SP-9821"), `đơn đầu tiên vẫn là: ${(firstOrder || "?").slice(0, 80)}`);
     await sleep(600);
     await cdp.shot("dashboard-click-orders.png");
     // Đóng drawer

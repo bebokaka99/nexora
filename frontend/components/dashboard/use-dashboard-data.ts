@@ -25,6 +25,8 @@ export function useDashboardData() {
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // TASK-016: phân biệt toast lỗi (nền đỏ) với toast thành công.
+  const [toastVariant, setToastVariant] = useState<"success" | "error">("success");
 
   // Syncing simulation
   const [isSyncingChannels, setIsSyncingChannels] = useState(false);
@@ -46,10 +48,21 @@ export function useDashboardData() {
 
   // Helper trigger toast
   const triggerToast = (msg: string) => {
+    setToastVariant("success");
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
+  };
+
+  // TASK-016: toast lỗi (phương án A — chặn checkout khi backend down):
+  // nền đỏ, nội dung giữ nguyên giỏ / không tạo đơn.
+  const triggerErrorToast = (msg: string) => {
+    setToastVariant("error");
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 6000);
   };
 
   // ---------------------------------------------------------------------------
@@ -168,7 +181,9 @@ export function useDashboardData() {
     activities,
     setActivities,
     toastMessage,
+    toastVariant,
     triggerToast,
+    triggerErrorToast,
     clearToast: () => setToastMessage(null),
     isSyncingChannels,
     handleTriggerChannelSync,

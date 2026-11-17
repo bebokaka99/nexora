@@ -55,12 +55,12 @@ export default function DashboardDemoPage() {
   const storesApi = useStores({ triggerToast: data.triggerToast, isAuthenticated });
   const pos = usePos({
     products: data.products,
-    setProducts: data.setProducts,
     setOrders: data.setOrders,
     setActivities: data.setActivities,
     stores: storesApi.stores,
     posStore: storesApi.posStore,
     triggerToast: data.triggerToast,
+    triggerErrorToast: data.triggerErrorToast,
   });
 
   // Modals & chat state (rieng cua page)
@@ -117,7 +117,7 @@ export default function DashboardDemoPage() {
 
         {/* Toast Notification Banner */}
         {data.toastMessage && (
-          <ToastBanner message={data.toastMessage} onClose={data.clearToast} />
+          <ToastBanner message={data.toastMessage} variant={data.toastVariant} onClose={data.clearToast} />
         )}
 
         {/* Scrollable Content Container */}

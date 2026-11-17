@@ -5,31 +5,90 @@ import type {
   ProductItem,
 } from "@/lib/mock-data";
 import type { Store as StoreEntity } from "@/lib/services/store-service";
+import {
+  orderService,
+  type Order as ApiOrder,
+} from "@/lib/services/order-service";
+import { ApiError } from "@/lib/api-client";
 import type { PosCartItem, PosPaymentMethod } from "./types";
 
 export interface UsePosOptions {
   products: ProductItem[];
-  setProducts: React.Dispatch<React.SetStateAction<ProductItem[]>>;
   setOrders: React.Dispatch<React.SetStateAction<OrderItem[]>>;
   setActivities: React.Dispatch<React.SetStateAction<ActivityEvent[]>>;
   stores: StoreEntity[];
   posStore: string;
   triggerToast: (msg: string) => void;
+  triggerErrorToast: (msg: string) => void;
+}
+
+/**
+ * TASK-016: adapter đơn thật (backend trả về) -> OrderItem mock mà tab Đơn
+ * hàng và ReceiptModal đang dùng, để đơn thật hiển thị được trong UI cũ mà
+ * không phải viết lại 2 component đó. id của OrderItem mock lấy đúng
+ * orderNumber do backend sinh (không còn mã POS-…-random của frontend).
+ */
+function adaptApiOrderToOrderItem(
+  order: ApiOrder,
+  opts: {
+    storeLabel: string;
+    whName: string;
+    isFirst: boolean;
+    paymentMethodLabel: string;
+  }
+): OrderItem {
+  return {
+    id: order.orderNumber,
+    customer: order.customerName
+      ? `${order.customerName}${order.customerPhone ? ` (${order.customerPhone})` : ""}`
+      : order.customerPhone
+        ? `Khách tại quầy (${order.customerPhone})`
+        : "Khách lẻ tại quầy",
+    phone: order.customerPhone || "0988 777 666",
+    channel: opts.isFirst ? "POS_STORE_1" : "POS_STORE_2",
+    channelLabel: opts.storeLabel,
+    channelBadgeColor:
+      "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700",
+    items: order.items.map((i) => ({
+      name: i.productName,
+      sku: i.sku,
+      qty: i.quantity,
+      price: i.unitPrice,
+    })),
+    totalAmount: order.totalAmount,
+    discountAmount: order.discountAmount,
+    status: "COMPLETED",
+    statusLabel: "Hoàn tất tại quầy",
+    statusColor:
+      "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800",
+    paymentStatus: "PAID",
+    paymentMethod: opts.paymentMethodLabel,
+    createdAt: "Vừa xong",
+    timeline: [
+      {
+        time: "Vừa xong",
+        event: `Thu ngân hoàn tất thanh toán hóa đơn ${order.orderNumber}`,
+      },
+      { time: "Vừa xong", event: `Trừ tồn kho trực tiếp tại ${opts.whName}` },
+    ],
+  };
 }
 
 /**
  * State & hành động của quầy POS (TASK-012 tách từ page.tsx):
  * giỏ hàng, chiết khấu, phương thức thanh toán, quét barcode mô phỏng,
- * thanh toán + trừ tồn kho + in hóa đơn nhiệt. Dữ liệu vẫn là mock.
+ * thanh toán + in hóa đơn nhiệt. TASK-016: thanh toán gọi POST /orders thật
+ * (phương án A — backend down thì chặn cứng, giữ giỏ); danh mục hiển thị
+ * vẫn là mock, tồn kho thật do backend trừ.
  */
 export function usePos({
   products,
-  setProducts,
   setOrders,
   setActivities,
   stores,
   posStore,
   triggerToast,
+  triggerErrorToast,
 }: UsePosOptions) {
   const [posCategory, setPosCategory] = useState<string>("all");
   const [posSearch, setPosSearch] = useState("");
@@ -40,6 +99,9 @@ export function usePos({
   const [posCashTendered, setPosCashTendered] = useState<number>(0);
   const [completedReceipt, setCompletedReceipt] = useState<OrderItem | null>(null);
   const [barcodeFlash, setBarcodeFlash] = useState(false);
+  // TASK-016 (phương án A): đang gọi POST /orders thì khóa nút thanh toán
+  // để tránh bấm 2 lần tạo 2 đơn.
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Helper helper to determine active POS store
   const getActivePosStore = () => {
@@ -127,90 +189,102 @@ export function usePos({
   const cartTotalAmount = Math.max(0, cartSubtotal - cartDiscountAmount);
   const cartChangeDue = Math.max(0, posCashTendered - cartTotalAmount);
 
-  // POS Complete Checkout
-  const handleCompletePosCheckout = () => {
+  // POS Complete Checkout — TASK-016 (phương án A, user chọn 17/11/2026):
+  // thanh toán đi qua backend thật POST /orders. Backend down hoặc lỗi thì
+  // CHẶN CỨNG: báo lỗi, GIỮ NGUYÊN giỏ, không tạo đơn, không trừ tồn.
+  // Khi API thành công mới dùng orderNumber backend sinh và KHÔNG trừ tồn
+  // local nữa (backend đã trừ 1 lần qua reserveOrDeductStock — trừ local
+  // thêm sẽ thành trừ 2 lần).
+  const handleCompletePosCheckout = async () => {
     if (posCart.length === 0) {
       triggerToast("Giỏ hàng đang trống. Vui lòng chọn sản phẩm!");
       return;
     }
+    if (isCheckingOut) return;
 
     const activeStoreObj = getActivePosStore();
     const isFirst = stores.length > 0 ? (posStore === stores[0]?.id || posStore === "store1") : (posStore === "store1");
-    const orderSeq = Math.floor(1000 + Math.random() * 9000);
-    const storeCode = activeStoreObj ? activeStoreObj.code.replace('STORE-', '') : (isFirst ? "CN1" : "CN2");
-    const newOrderId = `POS-${storeCode}-${orderSeq}`;
-
-    // 1. Deduct stock from products
-    setProducts((prev) =>
-      prev.map((prod) => {
-        const inCart = posCart.find((ci) => ci.product.id === prod.id);
-        if (!inCart) return prod;
-        if (isFirst) {
-          return { ...prod, stockStore1: Math.max(0, prod.stockStore1 - inCart.qty) };
-        } else {
-          return { ...prod, stockStore2: Math.max(0, prod.stockStore2 - inCart.qty) };
-        }
-      })
-    );
-
-    // 2. Create Order Record
-    const storeLabel = activeStoreObj ? `POS — ${activeStoreObj.name}` : (isFirst ? "POS — Chi Nhánh 1 (Q.1)" : "POS — Chi Nhánh 2 (Bình Thạnh)");
-    const whName = activeStoreObj?.defaultWarehouse?.name || (isFirst ? "Kho Q.1" : "Kho Bình Thạnh");
-
-    const newOrder: OrderItem = {
-      id: newOrderId,
-      customer: posCustomerPhone ? `Khách tại quầy (${posCustomerPhone})` : "Khách lẻ tại quầy",
-      phone: posCustomerPhone || "0988 777 666",
-      channel: isFirst ? "POS_STORE_1" : "POS_STORE_2",
-      channelLabel: storeLabel,
-      channelBadgeColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700",
-      items: posCart.map((item) => ({
-        name: item.product.name,
-        sku: item.product.sku,
-        qty: item.qty,
-        price: item.product.sellingPrice,
-      })),
-      totalAmount: cartTotalAmount,
-      discountAmount: cartDiscountAmount,
-      status: "COMPLETED",
-      statusLabel: "Hoàn tất tại quầy",
-      statusColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800",
-      paymentStatus: "PAID",
-      paymentMethod:
-        posPaymentMethod === "CASH"
-          ? "Tiền mặt"
-          : posPaymentMethod === "VIETQR"
+    const paymentMethodLabel =
+      posPaymentMethod === "CASH"
+        ? "Tiền mặt"
+        : posPaymentMethod === "VIETQR"
           ? "Chuyển khoản VietQR"
-          : "Thẻ ngân hàng (POS Card)",
-      createdAt: "Vừa xong",
-      timeline: [
-        { time: "Vừa xong", event: `Thu ngân hoàn tất thanh toán hóa đơn ${newOrderId}` },
-        { time: "Vừa xong", event: `Trừ tồn kho trực tiếp tại ${whName}` },
-      ],
-    };
+          : "Thẻ ngân hàng (POS Card)";
+    const storeLabel = activeStoreObj
+      ? `POS — ${activeStoreObj.name}`
+      : isFirst
+        ? "POS — Chi Nhánh 1 (Q.1)"
+        : "POS — Chi Nhánh 2 (Bình Thạnh)";
+    const whName =
+      activeStoreObj?.defaultWarehouse?.name ||
+      (isFirst ? "Kho Q.1" : "Kho Bình Thạnh");
 
-    setOrders((prev) => [newOrder, ...prev]);
+    setIsCheckingOut(true);
+    try {
+      const created = await orderService.createOrder({
+        channelType: "POS",
+        // storeId/warehouseId chỉ gửi khi có id thật từ API (khi backend
+        // down, stores = [] nên 2 field này undefined — backend tự resolve
+        // kho theo TASK-015; còn request sẽ lỗi kết nối và bị chặn ở dưới).
+        storeId: activeStoreObj?.id,
+        warehouseId: activeStoreObj?.defaultWarehouseId ?? undefined,
+        customerPhone: posCustomerPhone || undefined,
+        items: posCart.map((item) => ({
+          // variantId ở đây là id mock (PROD-01…); backend resolve về uuid
+          // thật theo SKU ở TASK-016 hướng (b).
+          variantId: item.product.id,
+          sku: item.product.sku,
+          productName: item.product.name,
+          quantity: item.qty,
+          unitPrice: item.product.sellingPrice,
+        })),
+        discountAmount: cartDiscountAmount,
+        status: "COMPLETED",
+        paymentStatus: "PAID",
+        paymentMethod: paymentMethodLabel,
+      });
 
-    // 3. Add to Activities feed
-    setActivities((prev) => [
-      {
-        id: `ACT-${Date.now()}`,
-        time: "Vừa xong",
-        type: "pos",
-        title: `Thanh toán thành công ${newOrderId}`,
-        description: `Đã thu ${cartTotalAmount.toLocaleString("vi-VN")} ₫ bằng ${newOrder.paymentMethod}. Trừ ${posCart.reduce((s, i) => s + i.qty, 0)} sản phẩm tồn kho.`,
-        tag: activeStoreObj ? activeStoreObj.code : (isFirst ? "POS CN1" : "POS CN2"),
-        tagColor: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200",
-      },
-      ...prev,
-    ]);
+      const newOrder = adaptApiOrderToOrderItem(created, {
+        storeLabel,
+        whName,
+        isFirst,
+        paymentMethodLabel,
+      });
 
-    // 4. Open Thermal Receipt Modal
-    setCompletedReceipt(newOrder);
+      setOrders((prev) => [newOrder, ...prev]);
 
-    // 5. Clear Cart
-    clearCart();
-    triggerToast(`Đã thanh toán thành công hóa đơn ${newOrderId}!`);
+      setActivities((prev) => [
+        {
+          id: `ACT-${Date.now()}`,
+          time: "Vừa xong",
+          type: "pos",
+          title: `Thanh toán thành công ${created.orderNumber}`,
+          description: `Đã thu ${created.totalAmount.toLocaleString("vi-VN")} ₫ bằng ${paymentMethodLabel}. Đơn đã lưu vào hệ thống, tồn kho trừ trực tiếp tại ${whName}.`,
+          tag: activeStoreObj ? activeStoreObj.code : isFirst ? "POS CN1" : "POS CN2",
+          tagColor:
+            "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200",
+        },
+        ...prev,
+      ]);
+
+      // Mở Thermal Receipt Modal với đơn thật
+      setCompletedReceipt(newOrder);
+
+      // Xóa giỏ sau khi backend đã nhận đơn
+      clearCart();
+      triggerToast(`Đã thanh toán thành công hóa đơn ${created.orderNumber}!`);
+    } catch (err) {
+      // Phương án A: lỗi thì giữ nguyên giỏ, không tạo đơn giả, không trừ tồn.
+      const detail =
+        err instanceof ApiError
+          ? err.message
+          : "Đã xảy ra lỗi không xác định khi tạo đơn hàng.";
+      triggerErrorToast(
+        `${detail} Đơn chưa được tạo, giỏ hàng vẫn giữ nguyên.`
+      );
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   // Filtered products for POS
@@ -252,6 +326,7 @@ export function usePos({
     cartDiscountAmount,
     cartTotalAmount,
     cartChangeDue,
+    isCheckingOut,
     handleCompletePosCheckout,
     filteredPosProducts,
   };
